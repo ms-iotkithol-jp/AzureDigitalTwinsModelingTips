@@ -1,0 +1,29 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Station;1",
+  "@type": "Interface",
+  "displayName": "Station",
+  "contents": [
+    {
+      "@type": "Property",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Station:StationId;1",
+      "name": "StationId",
+      "displayName": "Station Id",
+      "schema": "string"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Station:responsible_for;1",
+      "name": "responsible_for",
+      "displayName": "Responseible for",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Customer;1"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Station:assing_to;1",
+      "name": "assign_to",
+      "displayName": "Assign to",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:DriveryTruck;1"
+    }
+  ]
+}

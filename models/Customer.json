@@ -1,0 +1,31 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Customer;1",
+  "@type": "Interface",
+  "displayName": "Customer",
+  "contents": [
+    {
+      "@type": "Property",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Customer:CustomerId;1",
+      "name": "CustomerId",
+      "displayName": "Customer Id",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "Name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "Address",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "TelNo",
+      "schema": "string",
+      "displayName": "Tel No"
+    }
+  ]
+}

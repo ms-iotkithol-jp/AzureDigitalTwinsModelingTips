@@ -1,0 +1,87 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Product;1",
+  "@type": "Interface",
+  "displayName": "Product",
+  "contents": [
+    {
+      "@type": "Property",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Product:ProductId;1",
+      "name": "ProductId",
+      "displayName": "Product Id",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "CurrentTemperature",
+      "displayName": "現在温度",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "LowAllowableTemperature",
+      "displayName": "許容最低温度",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "HighAllowableTemperature",
+      "displayName": "許容最大温度",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "Location",
+      "displayName": "位置",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "Status",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "Proper",
+            "enumValue": 0
+          },
+          {
+            "name": "NearLowLimit",
+            "displayName": "Near Low Limitation",
+            "enumValue": 1
+          },
+          {
+            "name": "NearMaxLimit",
+            "displayName": "Near High Limitation",
+            "enumValue": 2
+          },
+          {
+            "name": "Hopeless",
+            "enumValue": 3
+          },
+          {
+            "name": "Unknown",
+            "enumValue": 4
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Product:created_at;1",
+      "name": "created_at",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Factory;1",
+      "displayName": "is created at",
+      "maxMultiplicity": 1,
+      "properties": [
+        {
+          "@type": "Property",
+          "name": "CreatedDate",
+          "displayName": "Created Date",
+          "schema": "dateTime"
+        }
+      ]
+    }
+  ]
+}

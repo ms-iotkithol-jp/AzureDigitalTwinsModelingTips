@@ -1,0 +1,48 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:DeliveryTruck;1",
+  "@type": "Interface",
+  "displayName": "DeliveryTruck",
+  "extends": "dtmi:embeddedgeorge:transport:const_temperature:sample:Truck;1",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "Status",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "AtStation",
+            "displayName": "At Station",
+            "enumValue": 0,
+            "description": "配送センターにいる"
+          },
+          {
+            "name": "DeliveringToCustomers",
+            "displayName": "Delivering products to customers",
+            "enumValue": 1
+          },
+          {
+            "name": "DriveToStation",
+            "displayName": "Drive to station",
+            "enumValue": 2,
+            "description": "配送を終えて配送センターに移動中"
+          },
+          {
+            "name": "InAccident",
+            "displayName": "In accident",
+            "enumValue": 3,
+            "description": "事故等、アクシデントに見舞われている"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:DeliveryTruck:carrying;1",
+      "name": "carrying",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:Product;1"
+    }
+  ]
+}

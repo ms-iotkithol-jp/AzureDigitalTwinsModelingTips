@@ -1,0 +1,15 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Factory;1",
+  "@type": "Interface",
+  "displayName": "Factory",
+  "contents": [
+    {
+      "@type": "Property",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Factory:FactoryId;1",
+      "name": "FactoryId",
+      "displayName": "Factory Id",
+      "schema": "string"
+    }
+  ]
+}

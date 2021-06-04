@@ -1,0 +1,21 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:CoolingContainerTruck;1",
+  "@type": "Interface",
+  "displayName": "CoolingContainerTruck",
+  "extends": "dtmi:embeddedgeorge:transport:const_temperature:Truck;1",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "ContainerTemperature",
+      "displayName": "Container Temperature",
+      "schema": "double"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:CoolingContainerTruck:carrying;1",
+      "name": "carrying",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Truck;1"
+    }
+  ]
+}

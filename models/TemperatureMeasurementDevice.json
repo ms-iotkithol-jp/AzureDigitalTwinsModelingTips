@@ -1,0 +1,41 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:TemperatureMeasurementDevice;1",
+  "@type": "Interface",
+  "displayName": "TemperatureMeasurementDevice",
+  "contents": [
+    {
+      "@type": "Property",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:TemperatureMeasurementDevice:deviceid;1",
+      "name": "deviceid",
+      "displayName": "Device Id",
+      "schema": "string"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "measurement",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "temperature",
+            "schema": "double",
+            "displayName": "Temperature"
+          },
+          {
+            "name": "measuredtime",
+            "displayName": "Meassured Time",
+            "schema": "dateTime"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:TemperatureMeasurementDevice:target;1",
+      "maxMultiplicity": 1,
+      "name": "target",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Product;1"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Order;1",
+  "@type": "Interface",
+  "displayName": "Order",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "OrderId",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Order;1",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name":"Status",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "string",
+        "enumValues": [
+          {
+            "name": "Ordered",
+            "enumValue": "Ordered"
+          },
+          {
+            "name": "FactoryAssigned",
+            "enumValue": "FactoryAssigend"
+          },
+          {
+            "name": "ProductCreated",
+            "enumValue": "ProductCreated"
+          },
+          {
+            "name": "TransportingToStation",
+            "enumValue": "TransportingToStation"
+          },
+          {
+            "name": "PreparingAtStation",
+            "enumValue": "PreparingAtStation"
+          },
+          {
+            "name": "DeliveringToCustomer",
+            "enumValue": "DeliveringToCustomer"
+          },
+          {
+            "name": "Delivered",
+            "enumValue": "Delivered"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Order:ordered_by;1",
+      "name": "ordered_by",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Customer;1",
+      "maxMultiplicity": 1
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Order:created;1",
+      "name": "created",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Product;1",
+      "maxMultiplicity": 1
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Order:is_assigned_for;1",
+      "name": "is_assigned_for",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Factory;1",
+      "maxMultiplicity": 1,
+      "properties": [
+        {
+          "@type": "Property",
+          "name": "AssignedDate",
+          "displayName": "Assigned Date",
+          "schema": "dateTime"
+        }
+      ]
+    }
+  ]
+}

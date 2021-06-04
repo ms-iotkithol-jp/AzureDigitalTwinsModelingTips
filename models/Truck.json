@@ -1,0 +1,45 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Truck;1",
+  "@type": "Interface",
+  "displayName": "Truck",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "TruckId",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Truck:TruckId;1",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "Location",
+      "schema": "string"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "currentLocation",
+      "displayName": "Current Location",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "longitude",
+            "schema": "double"
+          },
+          {
+            "name": "latitude",
+            "schema": "double"
+          },
+          {
+            "name": "attitude",
+            "schema": "double"
+          },
+          {
+            "name": "measuredtime",
+            "schema": "dateTime"
+          }
+        ]
+      }
+    }
+  ]
+}
