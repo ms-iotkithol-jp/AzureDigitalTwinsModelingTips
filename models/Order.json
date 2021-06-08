@@ -7,7 +7,7 @@
     {
       "@type": "Property",
       "name": "OrderId",
-      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Order;1",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Order:OrderId;1",
       "schema": "string"
     },
     {

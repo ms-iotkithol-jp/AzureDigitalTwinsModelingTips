@@ -1,6 +1,6 @@
 {
   "@context": "dtmi:dtdl:context;2",
-  "@id": "dtmi:embeddedgeorge:transport:const_temperature:DeliveryTruck;1",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:DeliveryTruck;1",
   "@type": "Interface",
   "displayName": "DeliveryTruck",
   "extends": "dtmi:embeddedgeorge:transport:const_temperature:sample:Truck;1",
@@ -40,9 +40,9 @@
     },
     {
       "@type": "Relationship",
-      "@id": "dtmi:embeddedgeorge:transport:const_temperature:DeliveryTruck:carrying;1",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:DeliveryTruck:carrying;1",
       "name": "carrying",
-      "target": "dtmi:embeddedgeorge:transport:const_temperature:Product;1"
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Product;1"
     }
   ]
 }

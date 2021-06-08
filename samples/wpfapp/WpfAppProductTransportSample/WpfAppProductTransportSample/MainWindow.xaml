@@ -1,0 +1,192 @@
+﻿<Window x:Class="WpfAppProductTransportSample.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfAppProductTransportSample"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="480" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Azure Digital Twins : " VerticalAlignment="Center" Margin="2,0,0,0"/>
+            <Button Name="buttonConnectToADT" Content="  Connect  " Margin="1" Click="buttonConnectToADT_Click"/>
+            <TextBox Name="tbADTInstanceUrl" VerticalAlignment="Center" Margin="1"/>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Border BorderBrush="Azure" BorderThickness="1" Margin="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="102"/>
+                        <RowDefinition Height="77"/>
+                        <RowDefinition Height="127"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Border BorderBrush="Black" BorderThickness="1" Margin="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Customer : " VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                <TextBlock Text="$dtId : " VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                <TextBox Name="tbCustomerDtId" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Customer Id : " VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                <TextBox Name="tbCustomerId" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                <TextBlock Text="Name : " Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                <TextBox Name="tbCustomerName" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                            </Grid>
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Tel No : " VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                <TextBox Name="tbCustomerTelNo" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                <TextBlock Text="Address : " Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                <TextBox Name="tbCustomerAddress" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                            </Grid>
+                            <Grid Grid.Row="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button Name="buttonGetStationsForCustomer" Content="Get Stations" Margin="1" IsEnabled="False" Click="buttonGetStationsForCustomer_Click"/>
+                                <ComboBox Name="cbStationsForCustomer" Grid.Column="1" Grid.ColumnSpan="2" Margin="1" IsEnabled="False" SelectionChanged="cbStationsForCustomer_SelectionChanged"/>
+                                <Button Name="buttonCreateCustomer" Grid.Column="3" Content="Create" Margin="1" IsEnabled="False" Click="buttonCreateCustomer_Click"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                    <Border BorderBrush="Black" BorderThickness="1" Grid.Row="1" Margin="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Order : " VerticalAlignment="Center"/>
+                                <TextBlock Text="  $dtId : " VerticalAlignment="Center"/>
+                                <TextBox Name="tbOrderDtId" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Order Id : " VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                <TextBox Name="tbOrderId" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                <Button Name="buttonCreateOrder" Content="Create" Grid.Column="3" Margin="1" IsEnabled="False" Click="buttonCreateOrder_Click"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Grid.Row="2">
+                                <TextBlock Text="  Status : " VerticalAlignment="Center" />
+                                <TextBox Name="tbOrderStatus" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="2" BorderBrush="Black" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="100"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="Order - Product -> Deliver - Step by Step" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <Button Name="buttonGetFactory" Grid.Column="0" Grid.Row="1" Content="Get Factories" Margin="1" IsEnabled="False" Click="buttonGetFactory_Click"/>
+                            <ComboBox Name="cbFactories" Grid.Column="1" Grid.Row="1" Margin="1" IsEnabled="False" SelectionChanged="cbFactories_SelectionChanged"/>
+                            <Button Name="buttonAssignFactory" Grid.Column="2" Grid.Row="1" Content="Assign" Margin="1" IsEnabled="False" Click="buttonAssignFactory_Click"/>
+                            <Button Name="buttonCreatedProduct" Grid.Column="0" Grid.Row="2" Content="Product Created" Margin="1" IsEnabled="False" Click="buttonCreatedProduct_Click"/>
+                            <ComboBox Name="cbCCTrucks" Grid.Column="1" Grid.Row="2" Margin="1" IsEnabled="False" SelectionChanged="cbCCTrucks_SelectionChanged"/>
+                            <Button Name="buttonPickToCCTruck" Grid.Column="2" Grid.Row="2" Content="Pick Product" Margin="1" IsEnabled="False" Click="buttonPickToCCTruck_Click"/>
+                            <Button Name="buttonArrivedToStation" Grid.Column="0" Grid.Row="3" Content="Arrived to Station" Margin="1" IsEnabled="False" Click="buttonArrivedToStation_Click"/>
+                            <ComboBox Name="cbDTruck" Grid.Column="1" Grid.Row="3" Margin="1" IsEnabled="False" SelectionChanged="cbDTruck_SelectionChanged"/>
+                            <Button Name="buttonPickToDTruck" Grid.Column="2" Grid.Row="3" Content="Pick Product" Margin="1" IsEnabled="False" Click="buttonPickToDTruck_Click"/>
+                            <Button Name="buttonDeliverToCustomer" Grid.ColumnSpan="3" Grid.Row="4" Content="Delivered Product to Customer" Margin="1" IsEnabled="False" Click="buttonDeliverToCustomer_Click"/>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="3" Margin="1" BorderBrush="Black" BorderThickness="1">
+                        <ScrollViewer Margin="1">
+                            <TextBox Name="tbLog"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </Border>
+            <Border BorderBrush="Azure" Grid.Column="1" BorderThickness="1" Margin="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="27"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Border BorderBrush="Azure" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="  SignalR : " VerticalAlignment="Center"/>
+                            <Button Name="buttonConnectToSignalR" Content="Connect to SignalR" Margin="1"/>
+                            <TextBox Name="tbSignalRInstanceUrl" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Border BorderBrush="Azure" BorderThickness="1" Grid.Row="1" Margin="1">
+                        <ListBox Name="lbProducts">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="1" BorderBrush="YellowGreen" BorderThickness="1" Width="360" Height="52">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="25"/>
+                                                <RowDefinition Height="25"/>
+                                            </Grid.RowDefinitions>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="$dtid=" VerticalAlignment="Center"/>
+                                                <TextBox Text="{Binding Path=Id}" VerticalAlignment="Center" Margin="0,0,2,0"/>
+                                                <TextBlock Text="Product Id=" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                                <TextBox Text="{Binding Path=ProductId}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Grid.Row="1">
+                                                <TextBlock Text="Status=" VerticalAlignment="Center"/>
+                                                <TextBox Text="{Binding Path=Status}" VerticalAlignment="Center" Margin="0,0,2,0"/>
+                                                <TextBlock Text="Temperature=" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                                <TextBox Text="{Binding Path=Temperature}" VerticalAlignment="Center" Margin="0,0,2,2"/>
+                                                <TextBlock Text="Location=" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                                <TextBox Text="{Binding Path=Location}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

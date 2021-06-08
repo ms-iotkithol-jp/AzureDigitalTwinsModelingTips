@@ -1,0 +1,161 @@
+# Azure Digital Twins にアクセスして動作する WPF Application 
+
+以下の一連のシナリオを試行するアプリケーションを作成する。    
+1. Customer の作成  
+1. Order の作成  
+1. Order への生産 Factory 割り当て  
+1. Product の生産完了と Cooling Container Truck の割り当て、及び Product の積み込み  
+1. Cooling Container Truck による、Station への Product 移送  
+1. Cooling Container Truck の Station への到着と、Station への積み下ろし  
+1. Customer への配送用 Delivery Truck の割り当てと、Delivery Truck への積み込み  
+1. Customer への Product 配送完了  
+
+加えて、Product の位置情報と、Status を SignalR 配信で受信し表示する。  
+
+※ Mobile 端末で動作するアプリケーションや Web アプリケーションも Azure Digital Twins にアクセスする方法の基本的な部分は同じである。  
+
+アプリケーションの開発は、Visual Studio 2019 で、WPF .NET Core App テンプレートを使って行う。  
+※ 参考 - https://docs.microsoft.com/en-us/dotnet/desktop/wpf/get-started/create-app-visual-studio?view=netdesktop-5.0  
+
+---
+## WPF Application への Azure Digital Twins SDK のインストール  
+Azure Digital Twins へのアクセスに必要な SDK ライブラリのインストール方法は以下の通り。  
+![Add Nuget Packge](images/wpfapp/add_nuget.svg) 
+"ツール"をクリックし、"Nuget パッケージ マネージャ"→"ソリューションの Nuget パッケージの管理"の順に選択する。  
+![Install ADT SDK](images/wpfapp/install_adtsdk.svg)  
+"参照"を選択し、検索窓に"azure digital twins"と入力する。  
+"Azure.DigitalTwins.Core" が表示されるので選択して、インストール先のプロジェクトにチェックを入れて、"インストール"をクリックする。  
+ライセンスへの同意等を行い、インストールを完了する。  
+同じ要領で、以下の、認証や設定ファイルの読み込み、JSON 処理用の NuGet ライブラリーをインストールする。  
+- Azure.Identity  
+- Microsoft.Extensions.Configuration.Json  
+- Newtonsoft.Json  
+
+---
+## Azure Digital Twins への接続  
+### Azure Digital Twins インスタンスへのアクセス用設定  
+プロジェクトに、appsettings.json というファイルを追加し、  
+```json
+{
+  "ATInstanceUrl": "<- ADT Name ->.api.sea.digitaltwins.azure.net"
+}
+```
+<b><i>&lt;- ADT Name -&gt;</i></b> は、各自が作成した Azure Digital Twins の名前を入力する。  
+
+### Azure Digital Twins への接続ロジック   
+```cs
+    var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false, reloadOnChange: false).Build();
+    tbADTInstanceUrl.Text = config["instanceurl"];
+    var credential = new DefaultAzureCredential();
+    var instanceUrl = tbADTInstanceUrl.Text;
+    if (!instanceUrl.StartsWith("http"))
+    {
+        instanceUrl = "https://" + instanceUrl;
+    }
+    twinsClient = new DigitalTwinsClient(new Uri(instanceUrl), credential);
+```
+
+---
+## Azure Digital Twins を使った、Twin Graph 操作ロジックのパターン  
+
+### Twin の生成  
+```cs
+    var newCustomer = new BasicDigitalTwin()
+    {
+        Id = tbCustomerDtId.Text,
+        Metadata =
+        {
+            ModelId = customerModelId
+        },
+        Contents =
+        {
+            {"CustomerId", customerId },
+            {"Name", tbCustomerName.Text },
+            {"TelNo",tbCustomerTelNo.Text },
+            {"Address",tbCustomerAddress.Text }
+        }
+    };
+    await twinsClient.CreateOrReplaceDigitalTwinAsync(customerId, newCustomer);
+```
+
+### Twin Property の更新
+```cs
+    if (target.Contents.ContainsKey("Status"))
+    {
+        updateTwin.AppendReplace("/Status", newStatus);
+    }
+    else
+    {
+        updateTwin.AppendAdd("/Status", newStatus);
+    }
+    await twinsClient.UpdateDigitalTwinAsync(id, updateTwin);
+```
+
+
+### Relationship の生成 
+```cs
+    var relationship = new BasicRelationship()
+    {
+        Name = "ordered_by",
+        SourceId = orderId,
+        TargetId = tbCustomerDtId.Text
+    };
+    var relationshipId = $"{relationship.SourceId}-{relationship.Name}-{relationship.TargetId}";
+    await twinsClient.CreateOrReplaceRelationshipAsync(relationship.SourceId, relationshipId, relationship);
+```
+
+### Relationship の取得  
+```cs
+    var rels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, relationshipName: "sort_to");
+    await foreach (var rel in rels)
+    {
+        var relId = rel.Id;
+        var targetId = rel.TaregetId;
+```
+Relationship の名前を指定しない場合は、関連づいている全ての Relationship が取得可能。  
+
+### Relationship の削除  
+```cs
+    var driveToRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentCCTruckId);
+    await foreach (var rel in driveToRels)
+    {
+        if (rel.Name == "drive_to")
+        {
+            await twinsClient.DeleteRelationshipAsync(currentCCTruckId, rel.Id);
+        }
+        else if (rel.Name == "carrying")
+        {
+            await twinsClient.DeleteRelationshipAsync(currentCCTruckId, rel.Id);
+```
+
+### 特定の条件を満たす Twin の検索  
+```cs
+    var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{orderModelId}') AND $dtId='{id}'";
+    var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
+    BasicDigitalTwin target = null;
+    await foreach(var order in queryResponse)
+    {
+        target = order;
+        break;
+    }
+```
+
+### Relationship を辿って Twin を取得  
+```cs
+    var query = $"SELECT customer FROM digitaltwins order JOIN customer RELATED order.order_by WHERE order.OrderId = '{currentOrderId}' AND IS_OF_MODEL(order, '{orderModelId}')";
+    var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
+    BasicDigitalTwin targetCustomer = null;
+    await foreach (var customer in queryResponse)
+    {
+        targetCustomer = customer;
+        break;
+    }
+```
+クエリーのパターンは、HowToBuildTwinModel.md の Query Reference を参照の事。  
+
+
+---
+## SignalR を利用した、Twin 情報更新通知の受信  
+
+Under Construction  
+

@@ -1,9 +1,9 @@
 {
   "@context": "dtmi:dtdl:context;2",
-  "@id": "dtmi:embeddedgeorge:transport:const_temperature:CoolingContainerTruck;1",
+  "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:CoolingContainerTruck;1",
   "@type": "Interface",
   "displayName": "CoolingContainerTruck",
-  "extends": "dtmi:embeddedgeorge:transport:const_temperature:Truck;1",
+  "extends": "dtmi:embeddedgeorge:transport:const_temperature:sample:Truck;1",
   "contents": [
     {
       "@type": "Property",
@@ -13,9 +13,15 @@
     },
     {
       "@type": "Relationship",
-      "@id": "dtmi:embeddedgeorge:transport:const_temperature:CoolingContainerTruck:carrying;1",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:CoolingContainerTruck:carrying;1",
       "name": "carrying",
-      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Truck;1"
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Product;1"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:CoolingContainerTruck:drive_to;1",
+      "name": "drive_to",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Station;1"
     }
   ]
 }
