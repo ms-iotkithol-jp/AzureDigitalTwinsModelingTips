@@ -80,6 +80,7 @@ Azure Digital Twins へのアクセスに必要な SDK ライブラリのイン�
 
 ### Twin Property の更新
 ```cs
+    var updateTwin = new JsonPatchDocument();
     if (target.Contents.ContainsKey("Status"))
     {
         updateTwin.AppendReplace("/Status", newStatus);
@@ -151,7 +152,7 @@ Relationship の名前を指定しない場合は、関連づいている全て�
         break;
     }
 ```
-クエリーのパターンは、HowToBuildTwinModel.md の Query Reference を参照の事。  
+クエリーのパターンは、[HowToBuildTwinModel.md の Query Reference](./HowToBuildTwinModel.md#query-reference) を参照の事。  
 
 
 ---

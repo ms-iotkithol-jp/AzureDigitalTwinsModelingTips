@@ -23,7 +23,7 @@
       "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Station:assing_to;1",
       "name": "assign_to",
       "displayName": "Assign to",
-      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:DriveryTruck;1"
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:DeliveryTruck;1"
     },
     {
       "@type": "Relationship",

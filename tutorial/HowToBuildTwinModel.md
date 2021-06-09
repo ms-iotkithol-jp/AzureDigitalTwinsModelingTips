@@ -62,7 +62,7 @@ Property には、
 - 個々を区別するための識別子  
 - Twin を特徴づける変数  
 
-の二種類がある。前者については、Azure Digital Twins では、各Twinは、Azure Digital Twins が自動的に付与する、$dtId という識別子を持っている。シナリオ上、それで十分なら特に、識別子 Property を定義する必要はないが、シナリオ上、個々の Twin を区別するための意味のある変数がある場合は、適切な変数名を付与し、Property として定義する。  
+の二種類がある。前者については、Azure Digital Twins では、各Twinは、Azure Digital Twins がデフォルトで持っている、$dtId という識別子がある。$dtId は、空文字や日本語、特殊記号などを保持することができない。シナリオ上、それで十分なら特に、識別子 Property を定義する必要はないが、シナリオ上、個々の Twin を区別するための意味のある変数がある場合は、適切な変数名を付与し、Property として定義する。  
 後者については、シナリオ上、保持、共有が必要な変数をリストアップする。例えば Customer であれば、  
 - 名前（Name）
 - 住所（Address）
@@ -125,15 +125,15 @@ DTDL ファイルの作成は、[VS Code のDTDL作成用拡張機能](https://d
 DTDL で定義したファイルをサンプルとして示す。  
 |Twin Class|DTDL FIle|
 |-|-|
-|Customer|[/models/Customer.json](../models/Customer.js)|
-|Order|[/models/Order.json](../models/Order.js)|
-|Product|[/models/Product.json](../models/Product.js)|
-|Factory|[/models/Factory.json](../models/Factory.js)|
-|Station|[/models/Station.json](../models/Station.js)|
-|Temperature Measurement Device|[/models/TemperatureMeasurementDevice.json](../models/TemperatureMeasurementDevice.js)|
-|Truck|[/models/Truck.json](../models/Truck.js)|
-|Delivery Truck|[/models/DeliveryTruck.json](../models/DeliveryTruck.js)|
-|Cooling Container Truck|[/models/CoolingContainerTruck.json](../models/CoolingContainerTruck.js)|
+|Customer|[/models/Customer.json](../models/Customer.json)|
+|Order|[/models/Order.json](../models/Order.json)|
+|Product|[/models/Product.json](../models/Product.json)|
+|Factory|[/models/Factory.json](../models/Factory.json)|
+|Station|[/models/Station.json](../models/Station.json)|
+|Temperature Measurement Device|[/models/TemperatureMeasurementDevice.json](../models/TemperatureMeasurementDevice.json)|
+|Truck|[/models/Truck.json](../models/Truck.json)|
+|Delivery Truck|[/models/DeliveryTruck.json](../models/DeliveryTruck.json)|
+|Cooling Container Truck|[/models/CoolingContainerTruck.json](../models/CoolingContainerTruck.json)|
 
 ---
 ## Twin Model の Twin と Relationship による Dynamics  
@@ -142,6 +142,7 @@ DTDL で定義したファイルをサンプルとして示す。
 1. 顧客が製品を発注する。
 1. 製品を生産する工場を割り当てる。
 1. 製品を温度制御可能なトラックで配送ステーションに移送する  
+1. 配送ステーションに到着後、ステーションに運び込む
 
 といった状況があり、それぞれ、Twin Graph で表現すると、  
 最初のシナリオでは、  
@@ -150,9 +151,11 @@ DTDL で定義したファイルをサンプルとして示す。
 次のシナリオでは、  
 ![scenario example 2](images/scenario_order_factory.svg)  
 
-最後のシナリオでは、  
+次のシナリオでは、  
 ![scenario example 3](images/scenario_truck_station.svg)
 
+最後のシナリオでは、
+![scenario example 4](images/scenario_truck_arrived_to_station.svg)
 こんな形で、Twin Graph でシナリオの各シチュエーションが表現される。  
 他のシチュエーションについても、各自考えていただきたい。  
 
@@ -183,7 +186,9 @@ Azure Digital Twins インスタンスが作成されたら、Azure Portal で�
 ![open ADT explorer](images/open_adt_explorer.svg)  
 
 https://docs.microsoft.com/samples/azure-samples/digital-twins-explorer/digital-twins-explorer/ を参考に、以下の作業を行う。  
-- [models/](../models) に入っている、全ての Json ファイルをモデルの定義としてアップロードする。  
+- [models/](../models) に入っている全ての Json ファイルを、モデルの定義としてアップロードする。  
+- ADT Explorer の "MODEL GRAPH" を選択し、定義したはずの Twin Class、Relationship が全て表示されているか確認する。
+- 必要であれば、[model_icons](../model_icons) に入れてある、各 Twin Class 用のアイコンイメージを登録する。  
 - シナリオからいくつかのシチュエーションを設定し、Twin の作成と Relationship の作成を行う。  
 - https://docs.microsoft.com/ja-jp/azure/digital-twins/how-to-query-graph を参考に、いくつかのシチュエーションで、Twin を検索する。  
 
@@ -235,3 +240,6 @@ SELECT order FROM digitalTwins order JOIN customer RELATED order.order_by WHERE 
 
 Relationship の Traverse は多段も可能ではあるが、とりあえず、以上のパターンを覚えておけば、ロジックの作成においては十分戦える。  
 Query 文法の詳細は、https://docs.microsoft.com/en-us/azure/digital-twins/how-to-query-graph を参照の事。  
+
+---
+[ADT を使ったアプリ開発](./HowToBuildAppWithADT.md)
