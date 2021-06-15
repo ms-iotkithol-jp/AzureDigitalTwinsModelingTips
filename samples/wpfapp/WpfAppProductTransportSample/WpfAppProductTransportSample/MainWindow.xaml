@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfAppProductTransportSample"
         mc:Ignorable="d"
-        Title="MainWindow" Height="480" Width="800">
+        Title="MainWindow" Height="640" Width="1000">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
@@ -24,7 +24,7 @@
             <Border BorderBrush="Azure" BorderThickness="1" Margin="1">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="102"/>
+                        <RowDefinition Height="127"/>
                         <RowDefinition Height="77"/>
                         <RowDefinition Height="127"/>
                         <RowDefinition/>
@@ -36,13 +36,22 @@
                                 <RowDefinition/>
                                 <RowDefinition/>
                                 <RowDefinition/>
+                                <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <StackPanel Orientation="Horizontal">
+                            <Grid >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button Name="buttonGetCurrentCustomers" Content="Get Customers" Margin="1" IsEnabled="False" Click="buttonGetCurrentCustomers_Click"/>
+                                <ComboBox Name="cbCurrentCustomers" Grid.Column="1" Margin="1" IsEnabled="False" SelectionChanged="cbCurrentCustomers_SelectionChanged"/>
+                            </Grid>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal">
                                 <TextBlock Text="Customer : " VerticalAlignment="Center" Margin="2,0,0,0"/>
                                 <TextBlock Text="$dtId : " VerticalAlignment="Center" Margin="2,0,0,0"/>
                                 <TextBox Name="tbCustomerDtId" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <Grid Grid.Row="1">
+                            <Grid Grid.Row="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="80"/>
                                     <ColumnDefinition/>
@@ -54,7 +63,7 @@
                                 <TextBlock Text="Name : " Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                                 <TextBox Name="tbCustomerName" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                             </Grid>
-                            <Grid Grid.Row="2">
+                            <Grid Grid.Row="3">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="50"/>
                                     <ColumnDefinition Width="100"/>
@@ -66,7 +75,7 @@
                                 <TextBlock Text="Address : " Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                                 <TextBox Name="tbCustomerAddress" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                             </Grid>
-                            <Grid Grid.Row="3">
+                            <Grid Grid.Row="4">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                     <ColumnDefinition/>
@@ -118,9 +127,9 @@
                                 <RowDefinition Height="25"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="150"/>
                                 <ColumnDefinition Width="200"/>
-                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="150"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="Order - Product -> Deliver - Step by Step" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             <Button Name="buttonGetFactory" Grid.Column="0" Grid.Row="1" Content="Get Factories" Margin="1" IsEnabled="False" Click="buttonGetFactory_Click"/>
@@ -128,11 +137,19 @@
                             <Button Name="buttonAssignFactory" Grid.Column="2" Grid.Row="1" Content="Assign" Margin="1" IsEnabled="False" Click="buttonAssignFactory_Click"/>
                             <Button Name="buttonCreatedProduct" Grid.Column="0" Grid.Row="2" Content="Product Created" Margin="1" IsEnabled="False" Click="buttonCreatedProduct_Click"/>
                             <ComboBox Name="cbCCTrucks" Grid.Column="1" Grid.Row="2" Margin="1" IsEnabled="False" SelectionChanged="cbCCTrucks_SelectionChanged"/>
-                            <Button Name="buttonPickToCCTruck" Grid.Column="2" Grid.Row="2" Content="Pick Product" Margin="1" IsEnabled="False" Click="buttonPickToCCTruck_Click"/>
+                            <Button Name="buttonPickToCCTruck" Grid.Column="2" Grid.Row="2" Content="Pick Product to CC Truck" Margin="1" IsEnabled="False" Click="buttonPickToCCTruck_Click"/>
                             <Button Name="buttonArrivedToStation" Grid.Column="0" Grid.Row="3" Content="Arrived to Station" Margin="1" IsEnabled="False" Click="buttonArrivedToStation_Click"/>
                             <ComboBox Name="cbDTruck" Grid.Column="1" Grid.Row="3" Margin="1" IsEnabled="False" SelectionChanged="cbDTruck_SelectionChanged"/>
-                            <Button Name="buttonPickToDTruck" Grid.Column="2" Grid.Row="3" Content="Pick Product" Margin="1" IsEnabled="False" Click="buttonPickToDTruck_Click"/>
-                            <Button Name="buttonDeliverToCustomer" Grid.ColumnSpan="3" Grid.Row="4" Content="Delivered Product to Customer" Margin="1" IsEnabled="False" Click="buttonDeliverToCustomer_Click"/>
+                            <Button Name="buttonPickToDTruck" Grid.Column="2" Grid.Row="3" Content="Pick Product to Deliver Truc" Margin="1" IsEnabled="False" Click="buttonPickToDTruck_Click"/>
+                            <Grid Grid.Row="4" Grid.ColumnSpan="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button Name="buttonDeliverToCustomer" Grid.Column="0" Content="Delivered Product to Customer" Margin="1" IsEnabled="False" Click="buttonDeliverToCustomer_Click"/>
+                                <Button Name="buttonDeleteOrderProductCustomer" Grid.Column="2" Content="Delete Order/Product/Customer" Margin="1" IsEnabled="False" Click="buttonDeleteOrderProductCustomer_Click"/>
+                            </Grid>
                         </Grid>
                     </Border>
                     <Border Grid.Row="3" Margin="1" BorderBrush="Black" BorderThickness="1">
