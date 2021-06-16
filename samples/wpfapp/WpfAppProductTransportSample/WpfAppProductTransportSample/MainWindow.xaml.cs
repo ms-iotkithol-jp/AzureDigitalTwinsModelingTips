@@ -158,18 +158,23 @@ namespace WpfAppProductTransportSample
         {
             try
             {
-                stations.Clear();
-                var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{stationModelId}')";
-                var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
-                await foreach (var station in queryResponse)
-                {
-                    stations.Add(station.Id);
-                }
+                await GetCurrentStations();
                 cbStationsForCustomer.IsEnabled = true;
             }
             catch (Exception ex)
             {
                 ShowLog(ex.Message);
+            }
+        }
+
+        private async Task GetCurrentStations()
+        {
+            stations.Clear();
+            var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{stationModelId}')";
+            var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
+            await foreach (var station in queryResponse)
+            {
+                stations.Add(station.Id);
             }
         }
 
@@ -300,19 +305,24 @@ namespace WpfAppProductTransportSample
         {
             try
             {
-                factories.Clear();
-                var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{factoryModelId}')";
-                var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
-                await foreach (var factory in queryResponse)
-                {
-                    factories.Add(factory.Id);
-                }
+                await GetCurrentFactories();
 
                 cbFactories.IsEnabled = true;
             }
             catch (Exception ex)
             {
                 ShowLog(ex.Message);
+            }
+        }
+
+        private async Task GetCurrentFactories()
+        {
+            factories.Clear();
+            var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{factoryModelId}')";
+            var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
+            await foreach (var factory in queryResponse)
+            {
+                factories.Add(factory.Id);
             }
         }
 
@@ -692,6 +702,9 @@ namespace WpfAppProductTransportSample
                         }
                     }
                 }
+                buttonDeliverToCustomer.IsEnabled = false;
+                buttonCreateCustomer.IsEnabled = true;
+                buttonGetCurrentCustomers.IsEnabled = true;
             }
             catch (Exception ex)
             {
@@ -718,6 +731,7 @@ namespace WpfAppProductTransportSample
                     }
 #endif
                 }
+
                 cbCurrentCustomers.IsEnabled = true;
             }
             catch (Exception ex)
@@ -756,6 +770,22 @@ namespace WpfAppProductTransportSample
                         buttonCreateOrder.IsEnabled = true;
                     }
                     break;
+                }
+                await GetCurrentStations();
+                var icRels = twinsClient.GetIncomingRelationshipsAsync(tbCustomerDtId.Text);
+                await foreach (var rel in icRels)
+                {
+                    if (rel.RelationshipName == "responsible_for")
+                    {
+                        for(int i = 0; i < stations.Count; i++)
+                        {
+                            if (stations[i] == rel.SourceId)
+                            {
+                                cbStationsForCustomer.SelectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -863,8 +893,11 @@ namespace WpfAppProductTransportSample
                 }
                 else if (oFcRel.RelationshipName == "responsible_for")
                 {
-                    await twinsClient.DeleteRelationshipAsync(oFcRel.SourceId, oFcRel.RelationshipId);
-                    ShowLog($"Delete relationship:{oFcRel.RelationshipId}");
+                    if (isDeleteCustomer)
+                    {
+                        await twinsClient.DeleteRelationshipAsync(oFcRel.SourceId, oFcRel.RelationshipId);
+                        ShowLog($"Delete relationship:{oFcRel.RelationshipId}");
+                    }
                 }
             }
             if (isDeleteCustomer)

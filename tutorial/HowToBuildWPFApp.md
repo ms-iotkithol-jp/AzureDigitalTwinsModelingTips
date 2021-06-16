@@ -37,10 +37,10 @@ Azure Digital Twins へのアクセスに必要な SDK ライブラリのイン�
 プロジェクトに、appsettings.json というファイルを追加し、  
 ```json
 {
-  "ATInstanceUrl": "<- ADT Name ->.api.sea.digitaltwins.azure.net"
+  "adt-instance-url": "<- your Azure Digital Twins Instance URL ->"
 }
 ```
-<b><i>&lt;- ADT Name -&gt;</i></b> は、各自が作成した Azure Digital Twins の名前を入力する。  
+<b><i>&lt;-  your Azure Digital Twins Instance URL -&gt;</i></b> は、各自が作成した Azure Digital Twins の <b>概要の Host name</b> を入力する。  
 
 ### Azure Digital Twins への接続ロジック   
 ```cs
@@ -54,6 +54,8 @@ Azure Digital Twins へのアクセスに必要な SDK ライブラリのイン�
     }
     twinsClient = new DigitalTwinsClient(new Uri(instanceUrl), credential);
 ```
+DefaultAzureCredential ライブラリが認証処理を適宜行ってくれる。  
+
 
 ---
 ## Azure Digital Twins を使った、Twin Graph 操作ロジックのパターン  
@@ -107,13 +109,22 @@ Azure Digital Twins へのアクセスに必要な SDK ライブラリのイン�
 
 ### Relationship の取得  
 ```cs
-    var rels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, relationshipName: "sort_to");
+    var rels = twinsClient.GetRelationshipsAsync<BasicRelationship>(stationId, relationshipName: "sort_to");
     await foreach (var rel in rels)
     {
         var relId = rel.Id;
         var targetId = rel.TaregetId;
 ```
-Relationship の名前を指定しない場合は、関連づいている全ての Relationship が取得可能。  
+Relationship の名前を指定しない場合は、関連付けされた全ての Relationship が取得可能。なお、このロジックで取得できるのは、GetRelationshipsAsync の第一引数（起点となる Twin の $dtId）に指定された Twin の モデル定義の方に Relationship が定義されている場合だけである。  
+Twin のモデル定義で、別の Twin Model 側に Relationship が定義されている場合は、以下の様に、GetIncomingRelationshipsAsync を使って取得する。    
+```cs
+    var stationForCustomerRels = twinsClient.GetIncomingRelationshipsAsync(targetCustomerId);
+    await foreach (var sFcRels in stationForCustomerRels)
+    {
+        if (sFcRels.RelationshipName == "responsible_for")
+        {
+            responsibleStationId = sFcRels.SourceId;
+```
 
 ### Relationship の削除  
 ```cs
