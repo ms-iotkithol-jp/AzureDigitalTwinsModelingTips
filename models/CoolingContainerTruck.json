@@ -12,6 +12,49 @@
       "schema": "double"
     },
     {
+      "@type": "Property",
+      "name": "Status",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "Ready",
+            "displayName": "Ready",
+            "enumValue": 0,
+            "description": "配送可能"
+          },
+          {
+            "name": "DriveToFactory",
+            "displayName": "Driving to Factory",
+            "enumValue": 1
+          },
+          {
+            "name": "AtFactory",
+            "displayName": "Stay at Factory",
+            "enumValue": 2
+          },
+          {
+            "name": "DriveToStation",
+            "displayName": "Drive at Station",
+            "enumValue": 3
+          },
+          {
+            "name": "AtStation",
+            "displayName": "Stay at Station",
+            "enumValue": 4
+          },
+          {
+            "name": "InAccident",
+            "displayName": "In accident",
+            "enumValue": 5,
+            "description": "事故等、アクシデントに見舞われている"
+          }
+        ]
+      }
+    },
+
+    {
       "@type": "Relationship",
       "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:CoolingContainerTruck:carrying;1",
       "name": "carrying",
