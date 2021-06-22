@@ -1,0 +1,83 @@
+﻿<Window x:Class="WpfAppTruckSimulator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfAppTruckSimulator"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <TextBlock Text="Azure IoT Hub : " VerticalAlignment="Center"/>
+            <Button Name="buttonConnectToIoTHub" Content=" Connect " Margin="1" IsEnabled="False" Click="buttonConnectToIoTHub_Click"/>
+            <TextBox Name="tbIoTHubConnectionString" VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <TextBlock Text="Azure Digital Twins : " VerticalAlignment="Center"/>
+            <Button Name="buttonConnectToAzureDigitalTwins" Content=" Connect " Margin="1" Click="buttonConnectToAzureDigitalTwins_Click"/>
+            <TextBox Name="tbADTInstanceUrl" VerticalAlignment="Center"/>
+        </StackPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Border BorderBrush="Black" BorderThickness="1" Margin="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Border BorderBrush="Black" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button Name="buttonGetCCTrucks" Content="Get CC Trucks" Margin="1" Click="buttonGetCCTrucks_Click"/>
+                                <Button Name="buttonStartCCTruckSimulation" Content="Start Simulation" Grid.Column="1" Margin="1" Click="buttonStartCCTruckSimulation_Click"/>
+                            </Grid>
+                            <ListBox Name="lbCCTrucks" Grid.Row="1">
+
+                            </ListBox>
+                        </Grid>
+                    </Border>
+                    <Border BorderBrush="Black" BorderThickness="1" Grid.Row="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button Name="buttonGetDeliverTrucks" Content="Get Deliver Trucks" Margin="1" Click="buttonGetDeliverTrucks_Click"/>
+                                <Button Name="buttonStartDTruckSimulation" Content="Start Simulation" Grid.Column="1" Margin="1" Click="buttonStartDTruckSimulation_Click"/>
+                            </Grid>
+                            <ListBox Name="lbDTrucks" Grid.Row="1">
+
+                            </ListBox>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+            <Border BorderBrush="Black" BorderThickness="1" Grid.Column="1" Margin="1">
+                <ScrollViewer>
+                    <TextBox Name="tbLog"/>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
