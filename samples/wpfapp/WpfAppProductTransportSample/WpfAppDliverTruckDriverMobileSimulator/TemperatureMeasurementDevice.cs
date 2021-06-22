@@ -87,12 +87,12 @@ namespace WpfAppTruckSimulator
 
         }
 
-        public void StartAutomaticTimestampUpdate(Dispatcher owner, int intervalMS)
+        public void StartAutomaticTimestampUpdate(Dispatcher owner, int intervalSec)
         {
             if (timer == null)
             {
                 timer = new DispatcherTimer();
-                timer.Interval = TimeSpan.FromMilliseconds(intervalMS);
+                timer.Interval = TimeSpan.FromSeconds(intervalSec);
                 timer.Tick += (s, e) =>
                  {
                      owner.Invoke(() =>

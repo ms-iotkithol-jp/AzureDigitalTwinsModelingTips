@@ -47,6 +47,15 @@ namespace WpfAppTruckSimulator
 
         private void buttonSendStart_Click(object sender, RoutedEventArgs e)
         {
+            foreach(var tmd in TemparetureMewasurementDevices)
+            {
+                tmd.Temperature = double.Parse(tbInTemp.Text);
+                tmd.ExternalTemperatre = double.Parse(tbExtTemp.Text);
+                tmd.RiseRate = double.Parse(tbRiseRate.Text);
+                tmd.BatteryLevel = double.Parse(tbBatteryLevel.Text);
+                tmd.BatteryLevelDelta = double.Parse(tbBatteryLevelRate.Text);
+                tmd.StartAutomaticTimestampUpdate(this.Dispatcher, int.Parse(tbUpdateInterval.Text));
+            }
             var interval = int.Parse(tbSendInterval.Text);
             sendTimer = new DispatcherTimer();
             sendTimer.Interval = TimeSpan.FromSeconds(interval);
