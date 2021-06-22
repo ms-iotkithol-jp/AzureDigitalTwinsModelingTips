@@ -26,7 +26,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="127"/>
                         <RowDefinition Height="77"/>
-                        <RowDefinition Height="127"/>
+                        <RowDefinition Height="152"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Border BorderBrush="Black" BorderThickness="1" Margin="1">
@@ -125,6 +125,7 @@
                                 <RowDefinition Height="25"/>
                                 <RowDefinition Height="25"/>
                                 <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="150"/>
@@ -139,8 +140,15 @@
                             <ComboBox Name="cbCCTrucks" Grid.Column="1" Grid.Row="2" Margin="1" IsEnabled="False" SelectionChanged="cbCCTrucks_SelectionChanged"/>
                             <Button Name="buttonPickToCCTruck" Grid.Column="2" Grid.Row="2" Content="Pick Product to CC Truck" Margin="1" IsEnabled="False" Click="buttonPickToCCTruck_Click"/>
                             <Button Name="buttonArrivedToStation" Grid.Column="0" Grid.Row="3" Content="Arrived to Station" Margin="1" IsEnabled="False" Click="buttonArrivedToStation_Click"/>
-                            <ComboBox Name="cbDTruck" Grid.Column="1" Grid.Row="3" Margin="1" IsEnabled="False" SelectionChanged="cbDTruck_SelectionChanged"/>
-                            <Button Name="buttonPickToDTruck" Grid.Column="2" Grid.Row="3" Content="Pick Product to Deliver Truc" Margin="1" IsEnabled="False" Click="buttonPickToDTruck_Click"/>
+                            <Grid Grid.Row="3" Grid.Column="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button Name="buttonSetTMD" Content="Set TMD" Margin="1" IsEnabled="False" Click="buttonSetTMD_Click" />
+                                <ComboBox Name="cbDTruck" Grid.Column="1" Margin="1" IsEnabled="False" SelectionChanged="cbDTruck_SelectionChanged"/>
+                            </Grid>
+                            <Button Name="buttonPickToDTruck" Grid.Column="2" Grid.Row="3" Content="Pick Product to D Truck" Margin="1" IsEnabled="False" Click="buttonPickToDTruck_Click"/>
                             <Grid Grid.Row="4" Grid.ColumnSpan="3">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
@@ -148,8 +156,9 @@
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
                                 <Button Name="buttonDeliverToCustomer" Grid.Column="0" Content="Delivered Product to Customer" Margin="1" IsEnabled="False" Click="buttonDeliverToCustomer_Click"/>
-                                <Button Name="buttonDeleteOrderProductCustomer" Grid.Column="2" Content="Delete Order/Product/Customer" Margin="1" IsEnabled="False" Click="buttonDeleteOrderProductCustomer_Click"/>
+                                <Button Name="buttonDTruckBackToStation" Grid.Column="2" Content="Delivery Truck back to Station" Margin="1" IsEnabled="False" Click="buttonDTruckBackToStation_Click"/>
                             </Grid>
+                            <Button Name="buttonDeleteOrderProductCustomer" Grid.Row="5" Grid.Column="1" Content="Delete Order/Product/Customer" Margin="1" IsEnabled="False" Click="buttonDeleteOrderProductCustomer_Click"/>
                         </Grid>
                     </Border>
                     <Border Grid.Row="3" Margin="1" BorderBrush="Black" BorderThickness="1">

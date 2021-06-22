@@ -108,6 +108,7 @@ namespace WpfAppProductTransportSample
         static readonly string productModelId = "dtmi:embeddedgeorge:transport:const_temperature:sample:Product;1";
         static readonly string ccTruckModelId = "dtmi:embeddedgeorge:transport:const_temperature:sample:CoolingContainerTruck;1";
         static readonly string dvTruckModelId = "dtmi:embeddedgeorge:transport:const_temperature:sample:DeliveryTruck;1";
+        static readonly string tmdModelId = "dtmi:embeddedgeorge:transport:const_temperature:sample:TemperatureMeasurementDevice:deviceid;1";
 
         private async Task UpdateOrderStatus(string id, string newStatus)
         {
@@ -575,8 +576,6 @@ namespace WpfAppProductTransportSample
                         else if (rel.Name == "carrying")
                         {
                             bool isValidProduct = false;
-                            // Cooling Container Truck が、複数のStationに Product を運ぶ場合は、この Relationship から Product -> Order -> Customer -> Station と辿って、現在の Station に合致するものだけ荷下ろしするという処理が必要になる  
-                            // ここでは、簡単のため、積載されている全ての Product が到着した Station 向けであると仮定している。
                             var orderForProductRels = twinsClient.GetIncomingRelationshipsAsync(rel.TargetId);
                             await foreach (var oFpRel in orderForProductRels)
                             {
@@ -617,20 +616,7 @@ namespace WpfAppProductTransportSample
                         }
                     }
 
-                    // Find delivery trucks
-                    dvTrucks.Clear();
-                    // query = $"SELECT truck FROM digitaltwins station JOIN truck RELATED station.assign_to WHERE station.$dtId = '{currentDestinationStationId}' AND IS_OF_MODEL(station, '{stationModelId}')";
-                    // queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
-                    // await foreach(var truck in queryResponse)
-                    // {
-                    //    dvTrucks.Add(((JsonElement)truck.Contents["truck"]).GetProperty("$dtId").GetString());
-                    // }
-                    var dvTruckForStationRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, "assign_to");
-                    await foreach (var dvtFsRel in dvTruckForStationRels)
-                    {
-                        dvTrucks.Add(dvtFsRel.TargetId);
-                    }
-                    cbDTruck.IsEnabled = true;
+                    buttonSetTMD.IsEnabled = true;
                 }
             }
             catch (Exception ex)
@@ -669,6 +655,23 @@ namespace WpfAppProductTransportSample
 
                     await UpdateOrderStatus(currentOrderId, "DeliveringToCustomer");
 
+                    var pRels = twinsClient.GetIncomingRelationshipsAsync(rel.TargetId);
+                    await foreach(var pRel in pRels)
+                    {
+                        if (pRel.RelationshipName == "target")
+                        {
+                            var tmdRel = new BasicRelationship()
+                            {
+                                Name = "assigned_to",
+                                SourceId = pRel.SourceId,
+                                TargetId = rel.TargetId
+                            };
+                            var tmdRelId = $"{tmdRel.SourceId}-{tmdRel.Name}-{tmdRel.TargetId}";
+                            await twinsClient.CreateOrReplaceRelationshipAsync(pRel.SourceId, tmdRelId, tmdRel);
+                            ShowLog($"Created relationship - {tmdRelId}");
+                        }
+                    }
+
                     buttonDeliverToCustomer.IsEnabled = true;
                     buttonPickToDTruck.IsEnabled = false;
                     cbDTruck.IsEnabled = false;
@@ -698,13 +701,21 @@ namespace WpfAppProductTransportSample
                                 ShowLog($"Deleted relationship - {rel.Id}");
 
                                 await UpdateOrderStatus(currentOrderId, "Delivered");
+                                var tmdOfPRels = twinsClient.GetIncomingRelationshipsAsync(rel.TargetId);
+                                await foreach(var tmdOfPRel in tmdOfPRels)
+                                {
+                                    if (tmdOfPRel.RelationshipName == "target")
+                                    {
+                                        await twinsClient.DeleteRelationshipAsync(tmdOfPRel.SourceId, tmdOfPRel.RelationshipId);
+                                        ShowLog($"Deleted relationship - {tmdOfPRel.RelationshipId}");
+                                    }
+                                }
                             }
                         }
                     }
                 }
                 buttonDeliverToCustomer.IsEnabled = false;
-                buttonCreateCustomer.IsEnabled = true;
-                buttonGetCurrentCustomers.IsEnabled = true;
+                buttonDTruckBackToStation.IsEnabled = true;
             }
             catch (Exception ex)
             {
@@ -854,6 +865,7 @@ namespace WpfAppProductTransportSample
                         {
                             if (oRel.Name == "created")
                             {
+                                // Target is 'Product'
                                 var pRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(oRel.TargetId);
                                 await foreach (var pRel in pRels)
                                 {
@@ -911,6 +923,114 @@ namespace WpfAppProductTransportSample
                     await twinsClient.DeleteDigitalTwinAsync(currentCustomerId);
                     ShowLog($"Delete Customer:{currentCustomerId}");
                 }
+            }
+        }
+
+        private async void buttonSetTMD_Click(object sender, RoutedEventArgs e)
+        {
+            // First, list up products without TMD
+            var productRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, "sort_to");
+            var sortingProducts = new List<string>();
+            await foreach(var productRel in productRels)
+            {
+                var tmdOfPRels = twinsClient.GetIncomingRelationshipsAsync(productRel.TargetId);
+                bool unassigned = true;
+                await foreach(var tmdOfPRel in tmdOfPRels)
+                {
+                    if (tmdOfPRel.RelationshipName== "target")
+                    {
+                        unassigned = false;
+                        break;
+                    }
+                }
+                if (unassigned)
+                {
+                    sortingProducts.Add(productRel.TargetId);
+                }
+            }
+
+            // Select tmd which is equipment of current station and is not used for product.
+            var tmdRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, "equipments");
+            await foreach(var tmdRel in tmdRels)
+            {
+                var pRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(tmdRel.TargetId, "target");
+                bool unassigned = true;
+                await foreach(var pRel in pRels)
+                {
+                    unassigned = false;
+                    break;
+                }
+                if (unassigned)
+                {
+                    var rel = new BasicRelationship()
+                    {
+                        Name = "target",
+                        TargetId = sortingProducts[0],
+                        SourceId = tmdRel.TargetId
+                    };
+                    var relId = $"{rel.SourceId}-${rel.Name}-${rel.TargetId}";
+                    await twinsClient.CreateOrReplaceRelationshipAsync(tmdRel.TargetId, relId, rel);
+                    ShowLog($"Created relationship - {relId}");
+                    sortingProducts.Remove(sortingProducts[0]);
+                    if (sortingProducts.Count == 0)
+                    {
+                        break;
+                    }
+                }
+            }
+            if (sortingProducts.Count>0)
+            {
+                MessageBox.Show("Not enough TMD equipment that meets the condition!");
+                return;
+            }
+
+            // Find delivery trucks
+            dvTrucks.Clear();
+            // query = $"SELECT truck FROM digitaltwins station JOIN truck RELATED station.assign_to WHERE station.$dtId = '{currentDestinationStationId}' AND IS_OF_MODEL(station, '{stationModelId}')";
+            // queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
+            // await foreach(var truck in queryResponse)
+            // {
+            //    dvTrucks.Add(((JsonElement)truck.Contents["truck"]).GetProperty("$dtId").GetString());
+            // }
+            var dvTruckForStationRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, "assign_to");
+            await foreach (var dvtFsRel in dvTruckForStationRels)
+            {
+                dvTrucks.Add(dvtFsRel.TargetId);
+            }
+            cbDTruck.IsEnabled = true;
+        }
+
+        private async void buttonDTruckBackToStation_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var truckRels = twinsClient.GetIncomingRelationshipsAsync(currentDVTruckId);
+                await foreach(var tRel in truckRels)
+                {
+                    if (tRel.RelationshipName== "assigned_to")
+                    {
+                        var pRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(tRel.SourceId, "target");
+                        bool untargeted = true;
+                        await foreach(var pRel in pRels)
+                        {
+                            untargeted = true;
+                            break;
+                        }
+                        if (untargeted)
+                        {
+                            await twinsClient.DeleteRelationshipAsync(tRel.SourceId, tRel.RelationshipId);
+                            ShowLog($"Deleted relationship - {tRel.RelationshipId}");
+                        }
+                    }
+                }
+
+                buttonDTruckBackToStation.IsEnabled = false;
+                buttonCreateCustomer.IsEnabled = true;
+                buttonGetCurrentCustomers.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                ShowLog(ex.Message);
             }
         }
     }
