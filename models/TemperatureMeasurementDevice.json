@@ -26,6 +26,11 @@
             "name": "measuredtime",
             "displayName": "Meassured Time",
             "schema": "dateTime"
+          },
+          {
+            "name": "batteryLevel",
+            "displayName": "Battery Level",
+            "schema": "double"
           }
         ]
       }
@@ -36,6 +41,13 @@
       "maxMultiplicity": 1,
       "name": "target",
       "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:Product;1"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:TemperatureMeasurementDevice:assigned_to;1",
+      "maxMultiplicity": 1,
+      "name": "assigned_to",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:DeliveryTruck;1"
     }
   ]
 }

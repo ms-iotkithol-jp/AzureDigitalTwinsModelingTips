@@ -27,6 +27,13 @@
     },
     {
       "@type": "Relationship",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Station:equipments;1",
+      "name": "equipments",
+      "displayName": "Equipments",
+      "target": "dtmi:embeddedgeorge:transport:const_temperature:sample:TemperatureMeasurementDevice;1"
+    },
+    {
+      "@type": "Relationship",
       "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:Station:sort_to;1",
       "name": "sort_to",
       "displayName": "Sort to",
