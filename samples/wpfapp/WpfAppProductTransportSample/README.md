@@ -79,8 +79,19 @@ Order された Product の生産が完了したので、それを Station に�
 他に、Cooling Container Truck は、既に Station に到着済みなので、drive_to という Relationship は削除される。  
 次のステップとして、Station 内で配送処理された後の Product を Customer にお届けする Delivery Truck が必要になるので、Twin Graph から当該 Station に関連付けられた Delivery Truck をリストアップして、右横のコンボボックスに格納する。  
 
-### 6. Delivery Truck への Product の積み込み  
-コンボボックスで、Delivery Truck を選択し、右横の"Pick Product to Deliver Truck"をクリックする。  
+### 6. 配送準備の完了と Delivery Truck への Product の積み込み  
+配送準備とは、Twin Graph の表現に置き換えると、  
+- Station に備え付けられた Temperature Measurement Device（以下 TMD と略す）を Product に割り付ける⇒ Station に 'equipments' で関連付けられた TMD でかつ、Delivery Truck に 'assigned_to' で関連付けられていない TMD と Product 間を 'target' で関連付ける  
+
+※ Delivery Truck と 'assigned_to' と関連を持ち、かつ、Product と "target" と関連を持っている TMD は、TMD が装備された Product が Delivery Truck に載せられて搬送状態であることを意味し、前者のみの関連を持っている場合は、Customer への Product の配送が完了（その時点で TMD は回収されるはず）し、Delivery Truck で Station に戻される途中であることを意味する。  
+ということで、以上のことをまず実行する。  
+※ ここまで特に TMD の Twin については何も言及していなかったので、念のため。上記の操作をするためには、当然、TMD の Twin と Station との Relationship が Twin Graph 上に存在していなければならない。下図を参考に各自の Twin Graph に必要な Twin と Relationship を作成すること。  
+![tmd station twin graph](../images/tmd_station_twin_graph.svg)  
+
+"Set TMD" をクリックし、上記の、TMD の選択と Product との Relationship を作成する。  
+![set tmd](../images/set_tmd.svg)
+
+これで配送準備が整ったので、コンボボックスで、Customer への配送で利用する Delivery Truck を選択し、右横の"Pick Product to Deliver Truck"をクリックする。  
 ![pick to delivery truck](../images/pick_to_dtruck.svg)  
 この操作で、Product と Station の間で結ばれていた sort_to は削除され、Product と Truck の間で、carrying という Relationship が作成される。  
 
@@ -90,7 +101,15 @@ Order された Product の生産が完了したので、それを Station に�
 これで、配送は完了。  
 Order の Status が、Delivered に変わり、Delivery Truck と Product 間の carrying が削除される。  
 ![delevered](../images/delivered.svg)  
-### 8. Product、Order、Customer の削除  
+
+### 8. Station への Delivery Truck の帰還  
+配達終了後（リアルなシナリオなら、他の Customer に届ける荷物も積んであるはずで、それら全て配達作業が一段落したらだろうけど）、Station に戻って、TMD を回収する。  
+"Delivery Truck back to Station" をクリックする。  
+![dtruck back to station](../images/dtruck_back_to_station.svg)  
+Delivery Truck が Station に戻ったので、TMD を回収する。  
+つまり、TMD と Delivery Truck の間の "assigned_to" を削除する。  
+
+### 9. Product、Order、Customer の削除  
 前ステップが完了した時点で、Order、Product、Customer の Twin はまだ Twin Graph 上に残っている。  
 これをそのまま残すか、削除するかは、開発するソリューションがどうしたいかによる。  
 そのまま履歴として保持しておくのであれば、そのまま残せばよいし、履歴は、Cosmos DB や RDB で保持するのであれば、削除してかまわない。  

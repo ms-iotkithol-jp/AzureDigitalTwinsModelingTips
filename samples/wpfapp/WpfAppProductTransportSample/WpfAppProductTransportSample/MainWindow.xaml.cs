@@ -617,6 +617,7 @@ namespace WpfAppProductTransportSample
                     }
 
                     buttonSetTMD.IsEnabled = true;
+                    buttonArrivedToStation.IsEnabled = false;
                 }
             }
             catch (Exception ex)
@@ -628,7 +629,7 @@ namespace WpfAppProductTransportSample
         private void cbDTruck_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             buttonPickToDTruck.IsEnabled = true;
-            buttonArrivedToStation.IsEnabled = false;
+            buttonSetTMD.IsEnabled = false;
         }
 
         string currentDVTruckId = null;
@@ -664,7 +665,7 @@ namespace WpfAppProductTransportSample
                             {
                                 Name = "assigned_to",
                                 SourceId = pRel.SourceId,
-                                TargetId = rel.TargetId
+                                TargetId = currentDVTruckId
                             };
                             var tmdRelId = $"{tmdRel.SourceId}-{tmdRel.Name}-{tmdRel.TargetId}";
                             await twinsClient.CreateOrReplaceRelationshipAsync(pRel.SourceId, tmdRelId, tmdRel);
