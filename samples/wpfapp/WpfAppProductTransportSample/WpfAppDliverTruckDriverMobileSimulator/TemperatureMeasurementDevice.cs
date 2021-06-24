@@ -57,9 +57,14 @@ namespace WpfAppTruckSimulator
             {
                 timestamp = value;
                 OnPropertyChanged(nameof(Timestamp));
+                OnPropertyChanged(nameof(TimestampStr));
             }
         }
 
+        public string TimestampStr
+        {
+            get { return timestamp.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"); }
+        }
         public double ExternalTemperatre
         {
             get { return externalTemperature; }

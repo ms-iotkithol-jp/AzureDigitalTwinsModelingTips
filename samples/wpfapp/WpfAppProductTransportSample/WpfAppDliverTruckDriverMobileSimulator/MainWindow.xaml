@@ -44,10 +44,10 @@
                                     <ColumnDefinition/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <Button Name="buttonGetCCTrucks" Content="Get CC Trucks" Margin="1" Click="buttonGetCCTrucks_Click"/>
-                                <Button Name="buttonStartCCTruckSimulation" Content="Start Simulation" Grid.Column="1" Margin="1" Click="buttonStartCCTruckSimulation_Click"/>
+                                <Button Name="buttonGetCCTrucks" Content="Get CC Trucks" IsEnabled="False" Margin="1" Click="buttonGetCCTrucks_Click"/>
+                                <Button Name="buttonStartCCTruckSimulation" Content="Start Simulation" Grid.Column="1" IsEnabled="False" Margin="1" Click="buttonStartCCTruckSimulation_Click"/>
                             </Grid>
-                            <ListBox Name="lbCCTrucks" Grid.Row="1">
+                            <ListBox Name="lbCCTrucks" Grid.Row="1" SelectionChanged="lbCCTrucks_SelectionChanged">
 
                             </ListBox>
                         </Grid>
@@ -63,10 +63,10 @@
                                     <ColumnDefinition/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <Button Name="buttonGetDeliverTrucks" Content="Get Deliver Trucks" Margin="1" Click="buttonGetDeliverTrucks_Click"/>
-                                <Button Name="buttonStartDTruckSimulation" Content="Start Simulation" Grid.Column="1" Margin="1" Click="buttonStartDTruckSimulation_Click"/>
+                                <Button Name="buttonGetDeliverTrucks" Content="Get Deliver Trucks" IsEnabled="False" Margin="1" Click="buttonGetDeliverTrucks_Click"/>
+                                <Button Name="buttonStartDTruckSimulation" Content="Start Simulation" Grid.Column="1" IsEnabled="False" Margin="1" Click="buttonStartDTruckSimulation_Click"/>
                             </Grid>
-                            <ListBox Name="lbDTrucks" Grid.Row="1">
+                            <ListBox Name="lbDTrucks" Grid.Row="1" SelectionChanged="lbDTrucks_SelectionChanged">
 
                             </ListBox>
                         </Grid>

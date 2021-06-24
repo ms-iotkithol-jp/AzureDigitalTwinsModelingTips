@@ -40,6 +40,15 @@ namespace WpfAppTruckSimulator
         {
             lbTemperatureMeasuredDevices.ItemsSource = tmds;
             tbIoTHubConnectionString.Text = IotHubDeviceConnectionString;
+            tbDTruckId.Text = Target.Id;
+            foreach(var tmd in tmds)
+            {
+                tmd.BatteryLevel = double.Parse(tbBatteryLevel.Text);
+                tmd.BatteryLevelDelta = double.Parse(tbBatteryLevelRate.Text);
+                tmd.ExternalTemperatre = double.Parse(tbExtTemp.Text);
+                tmd.RiseRate = double.Parse(tbRiseRate.Text);
+                tmd.Temperature = double.Parse(tbInTemp.Text);
+            }
         }
 
         DispatcherTimer sendTimer = null;
@@ -69,6 +78,7 @@ namespace WpfAppTruckSimulator
                         longitude = double.Parse(tbLongitude.Text),
                         latitude = double.Parse(tbLatitude.Text),
                         attitude = double.Parse(tbAttitude.Text),
+                        status = cbStatus.SelectedIndex,
                         timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
                     };
                     foreach(var tmd in TemparetureMewasurementDevices)
@@ -116,6 +126,7 @@ namespace WpfAppTruckSimulator
                 deviceClient = DeviceClient.CreateFromConnectionString(tbIoTHubConnectionString.Text);
                 await deviceClient.OpenAsync();
                 logger.ShowLog("Delivery Truck Driver's Mobile Equipment has been connected.");
+                buttonSendStart.IsEnabled = true;
             }
             catch(Exception ex)
             {

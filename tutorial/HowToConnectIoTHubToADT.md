@@ -25,4 +25,5 @@ Azure IoT Hub からのデータ受信は、Azure Function の [IoT Hub Binding 
 
 ![azure iot hub message routing](images/function/iothub_message_routing.svg)  
 
-Device Twins の Reported Properties の更新は、Event Grid ではキャプチャできないのでず、Custome Endpoint（Event Hub） を利用する。  
+Device Twins の Reported Properties の更新は、Event Grid ではキャプチャできないので、Custome Endpoint（Event Hub） を利用する。  
+

@@ -5,8 +5,59 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfAppTruckSimulator"
         mc:Ignorable="d"
-        Title="WindowCCTruckSimulator" Height="450" Width="800">
+        Title="Cooling Container Truck Simulator" Height="450" Width="800">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Cooling Container Truck : " VerticalAlignment="Center"/>
+            <TextBlock Name="tbCCTruckId" VerticalAlignment="Center" Margin="0,0,3,0"/>
+            <Button Name="buttonConnectToIoTHub" Content=" Connect " Margin="1" Click="buttonConnectToIoTHub_Click"/>
+            <TextBlock Text="Azure IoT Hub : " VerticalAlignment="Center" Margin="3,0,0,0"/>
+            <TextBox Name="tbIoTHubConnectionString" VerticalAlignment="Center"/>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Border BorderBrush="Black" BorderThickness="1" Margin="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="125"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                        </Grid.RowDefinitions>
+                        <Button Name="buttonSendStart" Content="Send Start" Margin="1" IsEnabled="False" Click="buttonSendStart_Click"/>
+                        <Button Name="buttonSendStop" Content="Send Stop" Margin="1" Grid.Column="2" IsEnabled="False" Click="buttonSendStop_Click"/>
+                        <TextBlock Text="Latitude : " Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <TextBox Name="tbLatitude" Text=" 36.265836" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+                        <TextBlock Text="Longitude : " Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <TextBox Name="tbLongitude" Text="136.898361" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+                        <TextBlock Text="Attitude : " Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <TextBox Name="tbAttitude" Text="1012.2" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+                        <TextBlock Text="Send Interval : " Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <TextBox Name="tbSendInterval" Text="15" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+                    </Grid>
+                </Grid>
+            </Border>
+            <Border BorderBrush="Beige" BorderThickness="1" Margin="1">
+                
+            </Border>
+        </Grid>
     </Grid>
 </Window>

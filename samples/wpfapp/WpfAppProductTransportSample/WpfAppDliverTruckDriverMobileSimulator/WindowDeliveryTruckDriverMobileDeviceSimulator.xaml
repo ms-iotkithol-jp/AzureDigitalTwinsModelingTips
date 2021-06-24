@@ -12,12 +12,14 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Azure IoT Hub : " VerticalAlignment="Center"/>
+            <TextBlock Text="Delivery Truck : " VerticalAlignment="Center"/>
+            <TextBlock Name="tbDTruckId" VerticalAlignment="Center" Margin="0,0,3,0"/>
             <Button Name="buttonConnectToIoTHub" Content=" Connect " Margin="1" Click="buttonConnectToIoTHub_Click"/>
+            <TextBlock Text="Azure IoT Hub : " VerticalAlignment="Center" Margin="3,0,0,0"/>
             <TextBox Name="tbIoTHubConnectionString" VerticalAlignment="Center"/>
         </StackPanel>
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -53,7 +55,12 @@
                         <TextBlock Text="Send Interval : " Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                         <TextBox Name="tbSendInterval" Text="15" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
                         <TextBlock Text="Status : " Grid.Row="5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <TextBlock Name="tbStatus" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="1"/>
+                        <ComboBox Name="cbStatus" Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="2">
+                            <ComboBoxItem Content="AtStation" Selector.IsSelected="True"/>
+                            <ComboBoxItem Content="DeliveringToCustomers"/>
+                            <ComboBoxItem Content="DriveToStation"/>
+                            <ComboBoxItem Content="InAccident"/>
+                        </ComboBox>
                     </Grid>
                 </Border>
                 <Border Grid.Row="1" BorderBrush="Black" BorderThickness="1" Margin="1">
@@ -91,13 +98,29 @@
                         <ListBox Name="lbTemperatureMeasuredDevices" Grid.Row="1">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="Red" BorderThickness="1" Margin="1">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="Id:" VerticalAlignment="Center" Margin="3,0,0,0"/>
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding Path=Id}"/>
-                                            <TextBlock Text="Temperature=" VerticalAlignment="Center" Margin="3,0,0,0"/>
-                                            <TextBox Text="{Binding Path=Temperature, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        </StackPanel>
+                                    <Border BorderBrush="Blue" BorderThickness="1" Margin="1" Height="52" Width="360">
+                                        <Grid Margin="1">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Orientation="Horizontal" Grid.ColumnSpan="4">
+                                                <TextBlock Text="Id:" VerticalAlignment="Center" Margin="1,0,0,0"/>
+                                                <TextBlock VerticalAlignment="Center" Text="{Binding Path=Id}"/>
+                                                <TextBlock Text="Timestamp : " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                                <TextBlock Text="{Binding Path=TimestampStr}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBlock Text="Temperature : " Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                            <TextBox Text="{Binding Path=Temperature, Mode=TwoWay}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"/>
+                                            <TextBlock Text="BatteryLevel : " Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                            <TextBox Text="{Binding Path=BatteryLevel, Mode=TwoWay}" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center"/>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>

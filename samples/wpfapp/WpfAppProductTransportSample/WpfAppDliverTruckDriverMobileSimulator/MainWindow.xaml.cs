@@ -82,7 +82,8 @@ namespace WpfAppTruckSimulator
                 await registryManager.OpenAsync();
                 ShowLog("Connected to IoT Hub as registry readable/writeable.");
                 buttonConnectToIoTHub.IsEnabled = false;
-     //           buttonSendStart.IsEnabled = true;
+                buttonGetCCTrucks.IsEnabled = true;
+                buttonGetDeliverTrucks.IsEnabled = true;
             }
             catch(Exception ex)
             {
@@ -106,6 +107,7 @@ namespace WpfAppTruckSimulator
                 twinsClient = new DigitalTwinsClient(new Uri(instanceUrl), credential);
                 ShowLog("Conneced to ADT.");
                 buttonConnectToIoTHub.IsEnabled = true;
+                buttonConnectToAzureDigitalTwins.IsEnabled = false;
             }
             catch (Exception ex)
             {
@@ -167,24 +169,15 @@ namespace WpfAppTruckSimulator
             }
             try
             {
-                var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE tags.adtSample.modelId='{CoolingContainerTruckInfo.CoolingContainerTruckModelId}' AND tags.adtSample.dtId='{ccTruckId}'");
-                Device target = null;
-                while (query.HasMoreResults)
-                {
-                    var twins = await query.GetNextAsTwinAsync();
-                    foreach(var d in twins)
-                    {
-                        target = await registryManager.GetDeviceAsync(d.DeviceId);
-                        break;
-                    }
-                    if (target != null) break;
-                }
+                var ccTruckTwin = ccTruckTwins[ccTruckId];
+                var deviceId = ccTruckTwin.Contents["iothub_deviceid"].ToString();
+                Device target = await registryManager.GetDeviceAsync(deviceId);
                 if (target != null)
                 {
                     var builder = Microsoft.Azure.Devices.IotHubConnectionStringBuilder.Create(tbIoTHubConnectionString.Text);
-                    string connectionString = $"Host={builder.HostName};DeviceId={target.Id};SharedAccessKey={target.Authentication.SymmetricKey.PrimaryKey}";
+                    string connectionString = $"HostName={builder.HostName};DeviceId={target.Id};SharedAccessKey={target.Authentication.SymmetricKey.PrimaryKey}";
 
-                    var simulatorWindow = new WindowCCTruckSimulator()
+                    var simulatorWindow = new WindowCCTruckSimulator(this)
                     {
                         IotHubDeviceConnectionString = connectionString,
                         Target = ccTruckTwins[ccTruckId]
@@ -208,32 +201,25 @@ namespace WpfAppTruckSimulator
             }
             try
             {
-                var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE tags.adtSample.modelId='{DeliveryTruckInfo.DeliveryTruckModelId}' AND tags.adtSample.dtId='{dTruckId}'");
-                Device target = null;
-                while (query.HasMoreResults)
-                {
-                    var twins = await query.GetNextAsTwinAsync();
-                    foreach (var d in twins)
-                    {
-                        target = await registryManager.GetDeviceAsync(d.DeviceId);
-                        break;
-                    }
-                    if (target != null) break;
-                }
+                var deviceId = dTruckTwins[dTruckId].Contents["iothub_deviceid"].ToString();
+                Device target = await registryManager.GetDeviceAsync(deviceId);
                 if (target != null)
                 {
                     var builder = Microsoft.Azure.Devices.IotHubConnectionStringBuilder.Create(tbIoTHubConnectionString.Text);
-                    string connectionString = $"Host={builder.HostName};DeviceId={target.Id};SharedAccessKey={target.Authentication.SymmetricKey.PrimaryKey}";
+                    string connectionString = $"HostName={builder.HostName};DeviceId={target.Id};SharedAccessKey={target.Authentication.SymmetricKey.PrimaryKey}";
 
                     var simulatorWindow = new WindowDeliveryTruckDriverMobileDeviceSimulator(this)
                     {
                         IotHubDeviceConnectionString = connectionString,
                         Target = dTruckTwins[dTruckId]
                     };
-                    var tmdRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(dTruckId, "equipments");
+                    var tmdRels = twinsClient.GetIncomingRelationshipsAsync(dTruckId);
                     await foreach (var rel in tmdRels)
                     {
-                        simulatorWindow.TemparetureMewasurementDevices.Add(new TemperatureMeasurementDevice() { Id = rel.TargetId });
+                        if (rel.RelationshipName == "assigned_to")
+                        {
+                            simulatorWindow.TemparetureMewasurementDevices.Add(new TemperatureMeasurementDevice() { Id = rel.SourceId });
+                        }
                     }
                     simulatorWindow.Show();
                 }
@@ -241,6 +227,22 @@ namespace WpfAppTruckSimulator
             catch (Exception ex)
             {
                 ShowLog(ex.Message);
+            }
+        }
+
+        private void lbCCTrucks_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lbCCTrucks.SelectedItem != null)
+            {
+                buttonStartCCTruckSimulation.IsEnabled = true;
+            }
+        }
+
+        private void lbDTrucks_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lbDTrucks.SelectedItem != null)
+            {
+                buttonStartDTruckSimulation.IsEnabled = true;
             }
         }
     }

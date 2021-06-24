@@ -39,6 +39,12 @@
       }
     },
     {
+      "@type": "Property",
+      "name": "iothub_deviceid",
+      "schema": "string",
+      "description": "device id in registration of IoT Hub"
+    },
+    {
       "@type": "Relationship",
       "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:DeliveryTruck:carrying;1",
       "name": "carrying",
