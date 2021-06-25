@@ -75,9 +75,12 @@ namespace WpfAppTruckSimulator
                     var sendContent = new
                     {
                         temperatureMeasurementDevices = new List<object>(),
-                        longitude = double.Parse(tbLongitude.Text),
-                        latitude = double.Parse(tbLatitude.Text),
-                        attitude = double.Parse(tbAttitude.Text),
+                        location = new
+                        {
+                            longitude = double.Parse(tbLongitude.Text),
+                            latitude = double.Parse(tbLatitude.Text),
+                            attitude = double.Parse(tbAttitude.Text)
+                        },
                         status = cbStatus.SelectedIndex,
                         timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
                     };

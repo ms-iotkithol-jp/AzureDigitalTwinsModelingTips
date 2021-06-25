@@ -26,7 +26,7 @@
             <Border BorderBrush="Black" BorderThickness="1" Margin="1">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="125"/>
+                        <RowDefinition Height="175"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid>
@@ -41,6 +41,8 @@
                             <RowDefinition Height="25"/>
                             <RowDefinition Height="25"/>
                             <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
                         </Grid.RowDefinitions>
                         <Button Name="buttonSendStart" Content="Send Start" Margin="1" IsEnabled="False" Click="buttonSendStart_Click"/>
                         <Button Name="buttonSendStop" Content="Send Stop" Margin="1" Grid.Column="2" IsEnabled="False" Click="buttonSendStop_Click"/>
@@ -50,12 +52,23 @@
                         <TextBox Name="tbLongitude" Text="136.898361" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
                         <TextBlock Text="Attitude : " Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                         <TextBox Name="tbAttitude" Text="1012.2" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
-                        <TextBlock Text="Send Interval : " Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <TextBox Name="tbSendInterval" Text="15" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+                        <TextBlock Text="Container Temperature : " Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <TextBox Name="tbTemp" Text="-10" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+                        <TextBlock Text="Status : " Grid.Row="5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <ComboBox Name="cbStatus" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2">
+                            <ComboBoxItem Content="Ready" IsSelected="True"/>
+                            <ComboBoxItem Content="DriveToFactory"/>
+                            <ComboBoxItem Content="AtFactory"/>
+                            <ComboBoxItem Content="DriveToStation"/>
+                            <ComboBoxItem Content="AtStation"/>
+                            <ComboBoxItem Content="InAccident"/>
+                        </ComboBox>
+                        <TextBlock Text="Send Interval : " Grid.Row="6" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <TextBox Name="tbSendInterval" Text="15" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
             </Border>
-            <Border BorderBrush="Beige" BorderThickness="1" Margin="1">
+            <Border BorderBrush="Beige" Grid.Column="1" BorderThickness="1" Margin="1">
                 
             </Border>
         </Grid>

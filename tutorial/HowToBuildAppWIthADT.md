@@ -7,6 +7,8 @@
 ビジネスシナリオに沿った、Twin の生成、Twin Property 更新、Twin 間の Relationship 生成・削除、Relationship の利用も含めた Twin の検索といった操作を、User On Demand で行う。  
 ⇒ [HowToBuildWPFApp.md](./HowToBuildWPFApp.md) 
 
+IoT Hub を通じて、デバイスの世界からのテレメトリーデータを供給する、シミュレーションアプリケーション。  
+⇒ [Azure Digital Twins にテレメトリーデータを供給するためのシミュレータ開発](../samples/wpfapp/WpfAppProductTransportSample/WpfAppDliverTruckDriverMobileSimulator)
 ## Function Applications  
 以下の種類の Function Application を作成する。  
 - <b>NoticeTelemetry</b> - 他のサービスからのデータに基づき、Twin Graph の更新、Telemetry Data の入力を行う。   

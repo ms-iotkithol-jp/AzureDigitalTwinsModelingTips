@@ -213,6 +213,7 @@ namespace WpfAppTruckSimulator
                         IotHubDeviceConnectionString = connectionString,
                         Target = dTruckTwins[dTruckId]
                     };
+                    // ここは、Query で Join で辿ったほうがいいかも
                     var tmdRels = twinsClient.GetIncomingRelationshipsAsync(dTruckId);
                     await foreach (var rel in tmdRels)
                     {

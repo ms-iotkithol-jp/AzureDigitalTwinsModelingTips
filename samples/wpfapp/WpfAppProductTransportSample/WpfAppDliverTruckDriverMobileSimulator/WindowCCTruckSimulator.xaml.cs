@@ -67,9 +67,14 @@ namespace WpfAppTruckSimulator
                     {
                         var content = new
                         {
-                            longitude = double.Parse(tbLongitude.Text),
-                            latitude = double.Parse(tbLatitude.Text),
-                            attitude = double.Parse(tbAttitude.Text),
+                            location = new
+                            {
+                                longitude = double.Parse(tbLongitude.Text),
+                                latitude = double.Parse(tbLatitude.Text),
+                                attitude = double.Parse(tbAttitude.Text)
+                            },
+                            container_temperature = double.Parse(tbTemp.Text),
+                            status = cbStatus.SelectedIndex,
                             timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
                         };
                         var json = Newtonsoft.Json.JsonConvert.SerializeObject(content);
