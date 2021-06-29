@@ -121,6 +121,7 @@ namespace WpfAppTruckSimulator
 
         private async void buttonGetCCTrucks_Click(object sender, RoutedEventArgs e)
         {
+            buttonGetCCTrucks.IsEnabled = false;
             try
             {
                 ccTrucks.Clear();
@@ -137,10 +138,12 @@ namespace WpfAppTruckSimulator
             {
                 ShowLog(ex.Message);
             }
+            buttonGetCCTrucks.IsEnabled = true;
         }
 
         private async void buttonGetDeliverTrucks_Click(object sender, RoutedEventArgs e)
         {
+            buttonGetDeliverTrucks.IsEnabled = false;
             try
             {
                 dTrucks.Clear();
@@ -157,6 +160,7 @@ namespace WpfAppTruckSimulator
             {
                 ShowLog(ex.Message);
             }
+            buttonGetDeliverTrucks.IsEnabled = true;
         }
 
         private async void buttonStartCCTruckSimulation_Click(object sender, RoutedEventArgs e)
@@ -177,7 +181,7 @@ namespace WpfAppTruckSimulator
                     var builder = Microsoft.Azure.Devices.IotHubConnectionStringBuilder.Create(tbIoTHubConnectionString.Text);
                     string connectionString = $"HostName={builder.HostName};DeviceId={target.Id};SharedAccessKey={target.Authentication.SymmetricKey.PrimaryKey}";
 
-                    var simulatorWindow = new WindowCCTruckSimulator(this)
+                    var simulatorWindow = new WindowCCTruckSimulator(twinsClient, this)
                     {
                         IotHubDeviceConnectionString = connectionString,
                         Target = ccTruckTwins[ccTruckId]
@@ -208,7 +212,7 @@ namespace WpfAppTruckSimulator
                     var builder = Microsoft.Azure.Devices.IotHubConnectionStringBuilder.Create(tbIoTHubConnectionString.Text);
                     string connectionString = $"HostName={builder.HostName};DeviceId={target.Id};SharedAccessKey={target.Authentication.SymmetricKey.PrimaryKey}";
 
-                    var simulatorWindow = new WindowDeliveryTruckDriverMobileDeviceSimulator(this)
+                    var simulatorWindow = new WindowDeliveryTruckDriverMobileDeviceSimulator(twinsClient, this)
                     {
                         IotHubDeviceConnectionString = connectionString,
                         Target = dTruckTwins[dTruckId]
@@ -219,7 +223,8 @@ namespace WpfAppTruckSimulator
                     {
                         if (rel.RelationshipName == "assigned_to")
                         {
-                            simulatorWindow.TemparetureMewasurementDevices.Add(new TemperatureMeasurementDevice() { Id = rel.SourceId });
+                            var tmd = new TemperatureMeasurementDevice() { Id = rel.SourceId };
+                            simulatorWindow.TemparetureMewasurementDevices.Add(tmd);
                         }
                     }
                     simulatorWindow.Show();

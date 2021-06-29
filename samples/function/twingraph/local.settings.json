@@ -3,6 +3,7 @@
   "Values": {
     "AzureWebJobsStorage": "<- storage account connection string ->",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "ADT_SERVICE_URL": "https://<- azure digital twins instance url ->"
+    "ADT_SERVICE_URL": "https://<- azure digital twins instance url ->",
+    "eventhub_output_cs": "<- access policy of event hub send role ->"
   }
 }

@@ -1,8 +1,10 @@
-﻿using Azure.DigitalTwins.Core;
+﻿using Azure;
+using Azure.DigitalTwins.Core;
 using Microsoft.Azure.Devices.Client;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -20,21 +22,30 @@ namespace WpfAppTruckSimulator
     /// </summary>
     public partial class WindowCCTruckSimulator : Window
     {
-        public  BasicDigitalTwin Target { get; set; }
+        public BasicDigitalTwin Target { get; set; }
         public string IotHubDeviceConnectionString { get; set; }
-        public WindowCCTruckSimulator(IIoTLogger logger)
+        private DigitalTwinsClient twinsClient;
+        public WindowCCTruckSimulator(DigitalTwinsClient client, IIoTLogger logger)
         {
             InitializeComponent();
             this.Loaded += WindowCCTruckSimulator_Loaded;
             this.logger = logger;
+            twinsClient = client;
         }
 
         IIoTLogger logger;
+        int lastStatus = 0;
 
         private void WindowCCTruckSimulator_Loaded(object sender, RoutedEventArgs e)
         {
             tbIoTHubConnectionString.Text = IotHubDeviceConnectionString;
             tbCCTruckId.Text = Target.Id;
+            if (Target.Contents.ContainsKey("Status"))
+            {
+  //              var jsonElem = ((JsonElement)Target.Contents["Status"]).;
+                lastStatus = ((JsonElement)Target.Contents["Status"]).GetInt32();
+                cbStatus.SelectedIndex = lastStatus;
+            }
         }
 
         DeviceClient deviceClient = null;
@@ -46,9 +57,9 @@ namespace WpfAppTruckSimulator
                 await deviceClient.OpenAsync();
                 logger.ShowLog($"CCTruck[{Target.Id}] connected : ");
                 buttonSendStart.IsEnabled = true;
-                buttonConnectToIoTHub.IsEnabled = true;
+                buttonConnectToIoTHub.IsEnabled = false;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.ShowLog(ex.Message);
             }
@@ -109,6 +120,34 @@ namespace WpfAppTruckSimulator
             }
             buttonSendStart.IsEnabled = true;
             buttonSendStop.IsEnabled = false;
+        }
+
+        private async void cbStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cbStatus.SelectedItem != null && Target !=null)
+            {
+                bool updated = false;
+                var patch = new JsonPatchDocument();
+                if (Target.Contents["Status"] != null)
+                {
+                    if (cbStatus.SelectedIndex != lastStatus)
+                    {
+                        patch.AppendReplace("/Status", cbStatus.SelectedIndex);
+                        lastStatus = cbStatus.SelectedIndex;
+                        updated = true;
+                    }
+                }
+                else
+                {
+                    patch.AppendAdd("/Status", cbStatus.SelectedItem);
+                    Target.Contents.Add("Status", cbStatus.SelectedIndex);
+                    updated = true;
+                }
+                if (updated)
+                {
+                    await twinsClient.UpdateDigitalTwinAsync(Target.Id, patch);
+                }
+            }
         }
     }
 }

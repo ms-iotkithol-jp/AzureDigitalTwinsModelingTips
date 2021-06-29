@@ -6,9 +6,9 @@
   "contents": [
     {
       "@type": "Property",
-      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:TemperatureMeasurementDevice:deviceid;1",
-      "name": "deviceid",
-      "displayName": "Device Id",
+      "@id": "dtmi:embeddedgeorge:transport:const_temperature:sample:TemperatureMeasurementDevice:tmdid;1",
+      "name": "tmdId",
+      "displayName": "TMD Id",
       "schema": "string"
     },
     {

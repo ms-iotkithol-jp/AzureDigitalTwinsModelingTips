@@ -55,7 +55,7 @@
                         <TextBlock Text="Container Temperature : " Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                         <TextBox Name="tbTemp" Text="-10" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
                         <TextBlock Text="Status : " Grid.Row="5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <ComboBox Name="cbStatus" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2">
+                        <ComboBox Name="cbStatus" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" SelectionChanged="cbStatus_SelectionChanged">
                             <ComboBoxItem Content="Ready" IsSelected="True"/>
                             <ComboBoxItem Content="DriveToFactory"/>
                             <ComboBoxItem Content="AtFactory"/>

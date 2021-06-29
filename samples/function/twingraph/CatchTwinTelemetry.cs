@@ -7,11 +7,11 @@ using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Extensions.Logging;
 
-namespace EmbeddedGeorge.DigitalTwins.Sample
+namespace EmbeddedGeorge.ADTSample
 {
-    public static class UpdateProperties
+    public static class CatchTwinTelemetry
     {
-        [FunctionName("UpdateProperties")]
+        [FunctionName("CatchTwinTelemetry")]
         public static void Run([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
         {
             log.LogInformation(eventGridEvent.Data.ToString());

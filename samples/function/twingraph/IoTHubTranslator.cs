@@ -118,13 +118,14 @@ namespace EmbeddedGeorge.ADTSample
                             await UpdateTwinProperties(dTruck, newProps, log);
                             foreach (dynamic tmd in telemetryJson.temperatureMeasurementDevices) {
                                 string qTmd = $"SELECT * FROM digitaltwins WHERE IS_OF_MODEL('{tmdModelId}') AND $dtId = '{tmd.tmdId}'";
-                                var qTmdResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
+                                var qTmdResponse = twinsClient.QueryAsync<BasicDigitalTwin>(qTmd);
                                 BasicDigitalTwin tmdTwin = null;
                                 await foreach(var r in qTmdResponse) {
                                     tmdTwin = r;
                                     break;
                                 }
                                 if (tmdTwin != null) {
+                                    log.LogInformation($"tmdTwin.Id={tmdTwin.Id},tmdTwin.ModelId={tmdTwin.Metadata.ModelId}");
                                     var tmdTelemetry = new {
                                         measurement = new {
                                             temperature = (double)tmd.temperature,
@@ -134,7 +135,7 @@ namespace EmbeddedGeorge.ADTSample
                                     };
                                     var tmdTelemetryJson = Newtonsoft.Json.JsonConvert.SerializeObject(tmdTelemetry);
                                     await twinsClient.PublishTelemetryAsync(tmdTwin.Id, eventGridEvent.Id, tmdTelemetryJson);
-                                    log.LogInformation($"Published to tmd[{tmd.tmdId}] - {tmdTelemetryJson}");
+                                    log.LogInformation($"Published to tmd[{tmdTwin.Id}] - {tmdTelemetryJson}");
                                 }
                                 else {
                                     log.LogInformation($"There is no coresponded twin for tmd[tmd.tmdId]");

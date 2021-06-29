@@ -1,10 +1,12 @@
-﻿using Azure.DigitalTwins.Core;
+﻿using Azure;
+using Azure.DigitalTwins.Core;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Client;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -29,13 +31,16 @@ namespace WpfAppTruckSimulator
 
         ObservableCollection<TemperatureMeasurementDevice> tmds = new ObservableCollection<TemperatureMeasurementDevice>();
         IIoTLogger logger = null;
-        public WindowDeliveryTruckDriverMobileDeviceSimulator(IIoTLogger logger)
+        DigitalTwinsClient twinsClient = null;
+        public WindowDeliveryTruckDriverMobileDeviceSimulator(DigitalTwinsClient client, IIoTLogger logger)
         {
             InitializeComponent();
             this.Loaded += WindowDeliveryTruckDriverMobileDeviceSimulator_Loaded;
             this.logger = logger;
+            twinsClient = client;
         }
 
+        int lastStatus = 0;
         private void WindowDeliveryTruckDriverMobileDeviceSimulator_Loaded(object sender, RoutedEventArgs e)
         {
             lbTemperatureMeasuredDevices.ItemsSource = tmds;
@@ -49,6 +54,11 @@ namespace WpfAppTruckSimulator
                 tmd.RiseRate = double.Parse(tbRiseRate.Text);
                 tmd.Temperature = double.Parse(tbInTemp.Text);
             }
+            if (Target.Contents.ContainsKey("Status"))
+            {
+                lastStatus = ((JsonElement)Target.Contents["Status"]).GetInt32();
+                cbStatus.SelectedIndex = lastStatus;
+            }
         }
 
         DispatcherTimer sendTimer = null;
@@ -56,7 +66,7 @@ namespace WpfAppTruckSimulator
 
         private void buttonSendStart_Click(object sender, RoutedEventArgs e)
         {
-            foreach(var tmd in TemparetureMewasurementDevices)
+            foreach (var tmd in TemparetureMewasurementDevices)
             {
                 tmd.Temperature = double.Parse(tbInTemp.Text);
                 tmd.ExternalTemperatre = double.Parse(tbExtTemp.Text);
@@ -84,7 +94,7 @@ namespace WpfAppTruckSimulator
                         status = cbStatus.SelectedIndex,
                         timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
                     };
-                    foreach(var tmd in TemparetureMewasurementDevices)
+                    foreach (var tmd in TemparetureMewasurementDevices)
                     {
                         sendContent.temperatureMeasurementDevices.Add(
                             new
@@ -119,6 +129,10 @@ namespace WpfAppTruckSimulator
                 sendTimer.Stop();
                 buttonSendStart.IsEnabled = true;
                 buttonSendStop.IsEnabled = false;
+                foreach (var tmd in TemparetureMewasurementDevices)
+                {
+                    tmd.StopAutomaticTimestampUpdate();
+                }
             }
         }
 
@@ -130,10 +144,39 @@ namespace WpfAppTruckSimulator
                 await deviceClient.OpenAsync();
                 logger.ShowLog("Delivery Truck Driver's Mobile Equipment has been connected.");
                 buttonSendStart.IsEnabled = true;
+                buttonConnectToIoTHub.IsEnabled = false;
             }
             catch(Exception ex)
             {
                 logger.ShowLog(ex.Message);
+            }
+        }
+
+        private async void cbStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cbStatus.SelectedItem != null && Target != null)
+            {
+                var patch = new JsonPatchDocument();
+                bool updated = false;
+                if (Target.Contents.ContainsKey("Status"))
+                {
+                    if (cbStatus.SelectedIndex != lastStatus)
+                    {
+                        patch.AppendReplace("/Status", cbStatus.SelectedIndex);
+                        lastStatus = cbStatus.SelectedIndex;
+                        updated = true;
+                    }
+                }
+                else
+                {
+                    patch.AppendAdd("/Status", cbStatus.SelectedIndex);
+                    Target.Contents.Add("Status", cbStatus.SelectedIndex);
+                    updated = true;
+                }
+                if (updated)
+                {
+                    await twinsClient.UpdateDigitalTwinAsync(Target.Id, patch);
+                }
             }
         }
     }
