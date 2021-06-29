@@ -132,16 +132,19 @@ dotnet add package Microsoft.Azure.WebJobs.Extensions.EventHubs
 ```cs
         [FunctionName("PropagateConsistencyTwinGraph")]
         public static async Task Run([EventGridTrigger]EventGridEvent eventGridEvent,
-            [EventHub("update-device-properties",Connection="eventhub_output_cs")] IAsyncCollector<string> outputEvents,
+            [EventHub("twingraphupdate",Connection="eventhub_twingraph_cs")] IAsyncCollector<string> outputEvents,
             ILogger log)
         {
             var eventGridEventData = eventGridEvent.Data.ToString();
 ```
+"EventHub" attribute の一番目の引数は Event Hub の名前、Connection の値は、local.settings.json で設定した Event Hub への接続文字列である。  
+
 以上の設定で、Run メソッドのロジック内で、  
 ```cs
             await outputEvents.AddAsync(msgJson);
 ```
 の様に書けば、Event Hub に msgJson に格納された文字列が送付される。  
+"EventHub" attribute
 ※ とても簡単！  
 
 サンプルでは、以下の情報を Event Hub に送信している。  
@@ -153,5 +156,8 @@ dotnet add package Microsoft.Azure.WebJobs.Extensions.EventHubs
 |Product|Location, Temperature|  
 
 ※ Event Hub へのメッセージ送信は、冒頭で言及した設計原則からすれば、PropagateConsistencyTwinGraph Function に入れるのはいかがなものかという感もあるが、簡単のため、同じ関数での実装を選択している。  
+
+具体的なサンプルを[samples/function/twingraph/PropagateConsistencyTwinGraph.cs](../samples/function/twingraph/PropagateConsistencyTwinGraph.cs) で提供しているので参考にしてほしい。  
+
 
 Event Hub は、大量のメッセージを送受信する様なソリューションで、サービス間を接続する際に使う鉄板のサービスであり、ここで説明した設定方法は是非習得してほしい。  

@@ -32,7 +32,7 @@ namespace EmbeddedGeorge.ADTSample
 
         [FunctionName("PropagateConsistencyTwinGraph")]
         public static async Task Run([EventGridTrigger]EventGridEvent eventGridEvent,
-            [EventHub("update-device-properties",Connection="eventhub_output_cs")] IAsyncCollector<string> outputEvents, ILogger log)
+            [EventHub("twingraphupdate",Connection="eventhub_twingraph_cs")] IAsyncCollector<string> outputEvents, ILogger log)
         {
             var eventGridEventData = eventGridEvent.Data.ToString();
             log.LogInformation($"Id:{eventGridEvent.Id},Subject:{eventGridEvent.Subject} data:{eventGridEventData}");
