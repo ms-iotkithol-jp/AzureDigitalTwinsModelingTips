@@ -25,7 +25,7 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="127"/>
-                        <RowDefinition Height="77"/>
+                        <RowDefinition Height="102"/>
                         <RowDefinition Height="152"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
@@ -94,13 +94,22 @@
                                 <RowDefinition/>
                                 <RowDefinition/>
                                 <RowDefinition/>
+                                <RowDefinition/>
                             </Grid.RowDefinitions>
-                            <StackPanel Orientation="Horizontal">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button Name="buttonGetOrders" Content="Get Orders" Margin="1" IsEnabled="False" Click="buttonGetOrders_Click"/>
+                                <ComboBox Name="cbOrders" Grid.Column="1" IsEnabled="False" SelectionChanged="cbOrders_SelectionChanged"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Grid.Row="1">
                                 <TextBlock Text="Order : " VerticalAlignment="Center"/>
                                 <TextBlock Text="  $dtId : " VerticalAlignment="Center"/>
                                 <TextBox Name="tbOrderDtId" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <Grid Grid.Row="1">
+                            <Grid Grid.Row="2">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                     <ColumnDefinition/>
@@ -111,7 +120,7 @@
                                 <TextBox Name="tbOrderId" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                                 <Button Name="buttonCreateOrder" Content="Create" Grid.Column="3" Margin="1" IsEnabled="False" Click="buttonCreateOrder_Click"/>
                             </Grid>
-                            <StackPanel Orientation="Horizontal" Grid.Row="2">
+                            <StackPanel Orientation="Horizontal" Grid.Row="3">
                                 <TextBlock Text="  Status : " VerticalAlignment="Center" />
                                 <TextBox Name="tbOrderStatus" VerticalAlignment="Center" />
                             </StackPanel>
@@ -177,7 +186,7 @@
                     <Border BorderBrush="Azure" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="  SignalR : " VerticalAlignment="Center"/>
-                            <Button Name="buttonConnectToSignalR" Content="Connect to SignalR" Margin="1"/>
+                            <Button Name="buttonConnectToSignalR" Content="Connect to SignalR" Margin="1" Click="buttonConnectToSignalR_Click"/>
                             <TextBox Name="tbSignalRInstanceUrl" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
@@ -185,25 +194,29 @@
                         <ListBox Name="lbProducts">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Margin="1" BorderBrush="YellowGreen" BorderThickness="1" Width="360" Height="52">
+                                    <Border Margin="1" BorderBrush="YellowGreen" BorderThickness="1" Width="360" Height="77">
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="25"/>
                                                 <RowDefinition Height="25"/>
+                                                <RowDefinition Height="25"/>
                                             </Grid.RowDefinitions>
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="$dtid=" VerticalAlignment="Center"/>
-                                                <TextBox Text="{Binding Path=Id}" VerticalAlignment="Center" Margin="0,0,2,0"/>
-                                                <TextBlock Text="Product Id=" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                                                <TextBox Text="{Binding Path=ProductId}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Order Id : " VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Path=OrderId}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Order Status : " VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                                <TextBlock Text="{Binding Path=OrderStatus}" VerticalAlignment="Center"/>
                                             </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Grid.Row="1">
-                                                <TextBlock Text="Status=" VerticalAlignment="Center"/>
-                                                <TextBox Text="{Binding Path=Status}" VerticalAlignment="Center" Margin="0,0,2,0"/>
-                                                <TextBlock Text="Temperature=" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                                                <TextBox Text="{Binding Path=Temperature}" VerticalAlignment="Center" Margin="0,0,2,2"/>
+                                            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                                <TextBlock Text="Product Id : " VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Path=ProductId}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Path=ProductStatus}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                                <TextBlock Text="Temperature : " VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                                <TextBlock Text="{Binding Path=ProductTemperature}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Grid.Row="2">
                                                 <TextBlock Text="Location=" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                                                <TextBox Text="{Binding Path=Location}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Path=ProductLocation}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>

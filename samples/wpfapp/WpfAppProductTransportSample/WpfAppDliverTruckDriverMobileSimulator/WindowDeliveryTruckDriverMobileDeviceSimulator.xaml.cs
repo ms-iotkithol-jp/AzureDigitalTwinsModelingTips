@@ -75,48 +75,51 @@ namespace WpfAppTruckSimulator
                 tmd.BatteryLevelDelta = double.Parse(tbBatteryLevelRate.Text);
                 tmd.StartAutomaticTimestampUpdate(this.Dispatcher, int.Parse(tbUpdateInterval.Text));
             }
-            var interval = int.Parse(tbSendInterval.Text);
-            sendTimer = new DispatcherTimer();
-            sendTimer.Interval = TimeSpan.FromSeconds(interval);
-            sendTimer.Tick += async (s, e) =>
+            if (sendTimer == null)
             {
-                try
+                sendTimer = new DispatcherTimer();
+                sendTimer.Tick += async (s, e) =>
                 {
-                    var sendContent = new
+                    try
                     {
-                        temperatureMeasurementDevices = new List<object>(),
-                        location = new
+                        var sendContent = new
                         {
-                            longitude = double.Parse(tbLongitude.Text),
-                            latitude = double.Parse(tbLatitude.Text),
-                            attitude = double.Parse(tbAttitude.Text)
-                        },
-                        status = cbStatus.SelectedIndex,
-                        timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-                    };
-                    foreach (var tmd in TemparetureMewasurementDevices)
-                    {
-                        sendContent.temperatureMeasurementDevices.Add(
-                            new
+                            temperatureMeasurementDevices = new List<object>(),
+                            location = new
                             {
-                                tmdId = tmd.Id,
-                                temperature = tmd.Temperature,
-                                batteryLevel = tmd.BatteryLevel,
-                                timestamp = tmd.Timestamp
-                            });
+                                longitude = double.Parse(tbLongitude.Text),
+                                latitude = double.Parse(tbLatitude.Text),
+                                attitude = double.Parse(tbAttitude.Text)
+                            },
+                            status = cbStatus.SelectedIndex,
+                            timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+                        };
+                        foreach (var tmd in TemparetureMewasurementDevices)
+                        {
+                            sendContent.temperatureMeasurementDevices.Add(
+                                new
+                                {
+                                    tmdId = tmd.Id,
+                                    temperature = tmd.Temperature,
+                                    batteryLevel = tmd.BatteryLevel,
+                                    timestamp = tmd.Timestamp
+                                });
+                        }
+                        var json = Newtonsoft.Json.JsonConvert.SerializeObject(sendContent);
+                        var msg = new Message(System.Text.Encoding.UTF8.GetBytes(json));
+                        msg.Properties.Add("application", "adt-transport-sample");
+                        msg.Properties.Add("message-type", "driver-mobile");
+                        await deviceClient.SendEventAsync(msg);
+                        logger.ShowLog($"Send - {json}");
                     }
-                    var json = Newtonsoft.Json.JsonConvert.SerializeObject(sendContent);
-                    var msg = new Message(System.Text.Encoding.UTF8.GetBytes(json));
-                    msg.Properties.Add("application", "adt-transport-sample");
-                    msg.Properties.Add("message-type", "driver-mobile");
-                    await deviceClient.SendEventAsync(msg);
-                    logger.ShowLog($"Send - {json}");
-                }
-                catch (Exception ex)
-                {
-                    logger.ShowLog(ex.Message);
-                }
-            };
+                    catch (Exception ex)
+                    {
+                        logger.ShowLog(ex.Message);
+                    }
+                };
+            }
+            var interval = int.Parse(tbSendInterval.Text);
+            sendTimer.Interval = TimeSpan.FromSeconds(interval);
             sendTimer.Start();
             buttonSendStop.IsEnabled = true;
             buttonSendStart.IsEnabled = false;

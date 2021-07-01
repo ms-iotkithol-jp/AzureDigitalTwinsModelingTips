@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "<- storage account connection string ->",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "twinhub_listen_EVENTHUB": "<- access policy of event hub: twinggraphupdate frin Digital Twin solution listen role ->",
+    "signalrhub_send_EVENTHUB": "<- access policy of event hub: datasource to SignalR solution send role ->"
+  }
+}

@@ -159,5 +159,10 @@ dotnet add package Microsoft.Azure.WebJobs.Extensions.EventHubs
 
 具体的なサンプルを[samples/function/twingraph/PropagateConsistencyTwinGraph.cs](../samples/function/twingraph/PropagateConsistencyTwinGraph.cs) で提供しているので参考にしてほしい。  
 
-
+---
+## 開発にあたっての各種 Tips  
 Event Hub は、大量のメッセージを送受信する様なソリューションで、サービス間を接続する際に使う鉄板のサービスであり、ここで説明した設定方法は是非習得してほしい。  
+
+PropagateConsistencyTwinGraph 関数のロジック実装にあたっては、Azure Digital Twins Explorer 等を用いて、Twin Model で Twin Class や Relationship の定義を常に確認しながらコーディングを進めることを推奨する。  
+Twin Model には、開発するソリューションに関するデータモデル、ビジネスルールが一か所に集約され（ある程度）厳密に定義されているので、開発者各人の誤解やミスを防ぐことができる。  
+また、Function の実行時、Twin Model の定義を破るようなデータ操作は当然できない訳であるから、誤解やミスによる隠れた実装ミスを防ぐこともできる。  

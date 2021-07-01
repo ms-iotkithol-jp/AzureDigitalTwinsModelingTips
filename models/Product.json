@@ -52,7 +52,7 @@
             "enumValue": 1
           },
           {
-            "name": "NearMaxLimit",
+            "name": "NearHighLimit",
             "displayName": "Near High Limitation",
             "enumValue": 2
           },

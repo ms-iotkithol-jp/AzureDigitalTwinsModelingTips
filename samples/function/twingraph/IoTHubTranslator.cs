@@ -75,8 +75,17 @@ namespace EmbeddedGeorge.ADTSample
                             int ccTruckStatus = (int)telemetryJson["status"];
                             newProps.Add("Status", ccTruckStatus);
                             string location = "";
-                            if (ccTruckStatus == 1 || ccTruckStatus == 4 || ccTruckStatus == 5) {
+                            switch (ccTruckStatus) {
+                            case 0:
+                            case 1:
+                            case 3:
+                            case 5:
                                 location = $"latitude:{twinTelemetry.currentLocation.latitude},longitude:{twinTelemetry.currentLocation.longitude},attitude:{twinTelemetry.currentLocation.attitude}";
+                                break;
+                            case 2: // AtFactory
+                                break;
+                            case 4: // AtStation
+                                break;
                             }
                             if (!string.IsNullOrEmpty(location)) {
                                 newProps.Add("Location", location);

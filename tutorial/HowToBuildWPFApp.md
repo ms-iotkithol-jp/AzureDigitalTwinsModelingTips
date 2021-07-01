@@ -168,6 +168,47 @@ Twin のモデル定義で、別の Twin Model 側に Relationship が定義さ�
 
 ---
 ## SignalR を利用した、Twin 情報更新通知の受信  
+Azure Digital Twins 上の Twin Graph の更新情報を SignalR に送信する方法は、[HowToBuildSendToSignalR.md](./HotoBuildSendToSignalR.md) を参照の事。  
+WPF アプリケーションでの受信は、  
+![subscribe and receive message](images/function/ssr-subscribe-receive-messages.svg)  
+の様な構成をとる。  
 
-Under Construction  
+SignalR へのアクセス用に、Nuget パッケージの、"<b>Microsoft.AspNetCore.SignalR.Client</b>"をインストールする。
+
+次に、[WpfAppProductTransportSample](../samples/wpfapp/WpfAppProductTransportSample/WpfAppProductTransportSample) の appsettings.json に、<b><u>HubForSignalRService</u></b> Function の URL を追加する。  
+```json
+{
+  "adt-instance-url": "<- your Azure Digital Twins Instance URL ->",
+  "signalr-url": "<- URI for HubForSignalRService"
+}
+```   
+
+SignalR Service への Subscribe と メッセージの受信は以下の様なパターンで行う。  
+```cs
+                var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false, reloadOnChange: false).Build();
+                var signaRInstanceUrl = config["signalr-url"];
+                var httpClient = new System.Net.Http.HttpClient();
+                var response = await httpClient.PostAsync(tbSignalRInstanceUrl.Text + "/api/SignalRInfo", new System.Net.Http.StringContent(""));
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    dynamic signalRInfoJson = Newtonsoft.Json.JsonConvert.DeserializeObject(responseContent);
+                    string signalRUrl = signalRInfoJson["url"];
+                    string accessToken = signalRInfoJson["accessToken"];
+                    var hubConnection = new HubConnectionBuilder().WithUrl(signalRUrl, (info) =>
+                    {
+                        info.AccessTokenProvider = () => Task.FromResult(accessToken);
+                    }).Build();
+                    hubConnection.On<string>("SendData", async (msg) =>
+                    {
+                        Debug.WriteLine($"Received - {msg}");
+```
+
+SignalR のサンプルでは、Hub の名前を <b>SendData</b> としているので、hubConnection の On メソッドの引数で指定している。  
+メソッド On で受信する Hub を指定し、受信ハンドラーを登録したら、  
+```cs
+                    await hubConnection.StartAsync();
+```
+と、StartAsync をコールして、受信が開始される。SignalR にメッセージが送信されるたびに、On メソッドで登録したハンドラーがコールされ、msg に格納されて受信される。  
+受信しさえすれば、後はメッセージを解釈してアプリケーション上の表示を変えればよい  
 

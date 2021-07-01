@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.DigitalTwins.Core;
 using Azure.Identity;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -49,6 +50,16 @@ namespace WpfAppProductTransportSample
             {
                 var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false, reloadOnChange: false).Build();
                 tbADTInstanceUrl.Text = config["adt-instance-url"];
+                tbSignalRInstanceUrl.Text = config["signalr-url"];
+
+                twinOpT.TextBoxes.Add(tbCustomerDtId);
+                twinOpT.TextBoxes.Add(tbCustomerId);
+                twinOpT.TextBoxes.Add(tbCustomerName);
+                twinOpT.TextBoxes.Add(tbCustomerAddress);
+                twinOpT.TextBoxes.Add(tbCustomerTelNo);
+                twinOpT.TextBoxes.Add(tbOrderDtId);
+                twinOpT.TextBoxes.Add(tbOrderId);
+                twinOpT.TextBoxes.Add(tbOrderStatus);
             }
             catch (Exception ex)
             {
@@ -76,8 +87,9 @@ namespace WpfAppProductTransportSample
         ObservableCollection<string> factories = new ObservableCollection<string>();
         ObservableCollection<string> ccTrucks = new ObservableCollection<string>();
         ObservableCollection<string> dvTrucks = new ObservableCollection<string>();
-        ObservableCollection<ProductInfo> products = new ObservableCollection<ProductInfo>();
+        ObservableCollection<OrderAndProductInfo> products = new ObservableCollection<OrderAndProductInfo>();
         ObservableCollection<string> currentCustomers = new ObservableCollection<string>();
+        ObservableCollection<string> ordersByCustomer = new ObservableCollection<string>();
 
         private void buttonConnectToADT_Click(object sender, RoutedEventArgs e)
         {
@@ -94,6 +106,7 @@ namespace WpfAppProductTransportSample
                 buttonGetStationsForCustomer.IsEnabled = true;
                 buttonGetCurrentCustomers.IsEnabled = true;
                 buttonDeleteOrderProductCustomer.IsEnabled = true;
+                buttonConnectToADT.IsEnabled = false;
             }
             catch (Exception ex)
             {
@@ -109,6 +122,8 @@ namespace WpfAppProductTransportSample
         static readonly string ccTruckModelId = "dtmi:embeddedgeorge:transport:const_temperature:sample:CoolingContainerTruck;1";
         static readonly string dvTruckModelId = "dtmi:embeddedgeorge:transport:const_temperature:sample:DeliveryTruck;1";
         static readonly string tmdModelId = "dtmi:embeddedgeorge:transport:const_temperature:sample:TemperatureMeasurementDevice:deviceid;1";
+
+        TwinOperationThread twinOpT = new TwinOperationThread();
 
         private async Task UpdateOrderStatus(string id, string newStatus)
         {
@@ -243,6 +258,9 @@ namespace WpfAppProductTransportSample
                     relId = r.Id;
                 }
 
+                twinOpT.currentCustomerId = tbCustomerDtId.Text;
+                tbOrderId.Text = $"order-{twinOpT.currentCustomerId}";
+
                 buttonCreateOrder.IsEnabled = true;
                 buttonCreateCustomer.IsEnabled = false;
             }
@@ -252,7 +270,6 @@ namespace WpfAppProductTransportSample
             }
         }
 
-        string currentOrderId = null;
         private async void buttonCreateOrder_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -281,13 +298,13 @@ namespace WpfAppProductTransportSample
                 tbOrderStatus.Text = newOrder.Contents["Status"] as string;
                 await twinsClient.CreateOrReplaceDigitalTwinAsync(orderId, newOrder);
                 ShowLog($"Created : Order[{newOrder.Id}]");
-                currentOrderId = newOrder.Id;
+                twinOpT.currentOrderId = newOrder.Id;
 
                 var relationship = new BasicRelationship()
                 {
                     Name = "ordered_by",
                     SourceId = orderId,
-                    TargetId = tbCustomerDtId.Text
+                    TargetId = twinOpT.currentCustomerId
                 };
                 var relationshipId = $"{relationship.SourceId}-{relationship.Name}-{relationship.TargetId}";
                 await twinsClient.CreateOrReplaceRelationshipAsync(relationship.SourceId, relationshipId, relationship);
@@ -332,7 +349,6 @@ namespace WpfAppProductTransportSample
             buttonAssignFactory.IsEnabled = true;
         }
 
-        string currentFactoryId = null;
         private async void buttonAssignFactory_Click(object sender, RoutedEventArgs e)
         {
             if (cbFactories.SelectedItem == null)
@@ -346,20 +362,20 @@ namespace WpfAppProductTransportSample
                 var relationship = new BasicRelationship()
                 {
                     Name = "is_assigned_for",
-                    SourceId = currentOrderId,
+                    SourceId = twinOpT.currentOrderId,
                     TargetId = cbFactories.SelectedItem as string,
                     Properties =
-                {
-                    {"AssignedDate", now}
-                }
+                        {
+                            {"AssignedDate", now}
+                        }
                 };
                 string relationshipId = $"{relationship.SourceId}-{relationship.Name}-{relationship.TargetId}";
                 await twinsClient.CreateOrReplaceRelationshipAsync(relationship.SourceId, relationshipId, relationship);
 
                 ShowLog($"Created relationship : {relationshipId}");
-                currentFactoryId = relationship.TargetId;
+                twinOpT.currentFactoryId = relationship.TargetId;
 
-                await UpdateOrderStatus(currentOrderId, "FactoryAssigend");
+                await UpdateOrderStatus(twinOpT.currentOrderId, "FactoryAssigend");
 
                 buttonCreatedProduct.IsEnabled = true;
 
@@ -373,71 +389,86 @@ namespace WpfAppProductTransportSample
             }
         }
 
-        string currentProductId = null;
         private async void buttonCreatedProduct_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var id = Guid.NewGuid().ToString();
-                var newProduct = new BasicDigitalTwin()
+                var productRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(twinOpT.currentOrderId, "created");
+                bool noProduct = true;
+                await foreach(var pRel in productRels)
                 {
-                    Id = id,
-                    Metadata =
+                    noProduct = false;
+                    break;
+                }
+                if (noProduct)
+                {
+                    var id = Guid.NewGuid().ToString();
+                    var newProduct = new BasicDigitalTwin()
+                    {
+                        Id = id,
+                        Metadata =
                 {
                     ModelId=productModelId
                 },
-                    Contents =
+                        Contents =
                 {
                     {"ProductId",id },
                     {"CurrentTemperature",-10.0 },
                     {"LowAllowableTemperature", -15.0 },
                     {"HighAllowableTemperature", -5.0 },
-                    {"Location",$"factory:{currentFactoryId}" },
+                    {"Location",$"factory:{twinOpT.currentFactoryId}" },
                     {"Status", 0 }
                 }
-                };
-                await twinsClient.CreateOrReplaceDigitalTwinAsync(id, newProduct);
-                ShowLog($"Created : Product[{id}]");
-                currentProductId = newProduct.Id;
+                    };
+                    await twinsClient.CreateOrReplaceDigitalTwinAsync(id, newProduct);
+                    ShowLog($"Created : Product[{id}]");
+                    twinOpT.currentProductId = newProduct.Id;
 
-                var now = DateTime.Now;
-                var relationship = new BasicRelationship()
-                {
-                    Name = "created",
-                    SourceId = currentOrderId,
-                    TargetId = newProduct.Id
-                };
-                var relationshipId = $"{relationship.SourceId}-{relationship.Name}-{relationship.TargetId}";
-                await twinsClient.CreateOrReplaceRelationshipAsync(currentOrderId, relationshipId, relationship);
-                ShowLog($"Created relationship - {relationshipId}");
+                    var now = DateTime.Now;
+                    var relationship = new BasicRelationship()
+                    {
+                        Name = "created",
+                        SourceId = twinOpT.currentOrderId,
+                        TargetId = newProduct.Id
+                    };
+                    var relationshipId = $"{relationship.SourceId}-{relationship.Name}-{relationship.TargetId}";
+                    await twinsClient.CreateOrReplaceRelationshipAsync(twinOpT.currentOrderId, relationshipId, relationship);
+                    ShowLog($"Created relationship - {relationshipId}");
 
-                relationship = new BasicRelationship()
-                {
-                    Name = "created_at",
-                    SourceId = newProduct.Id,
-                    TargetId = currentFactoryId,
-                    Properties =
-                {
-                    {"CreatedDate",now }
+                    relationship = new BasicRelationship()
+                    {
+                        Name = "created_at",
+                        SourceId = newProduct.Id,
+                        TargetId = twinOpT.currentFactoryId,
+                        Properties =
+                        {
+                            {"CreatedDate",now }
+                        }
+                    };
+                    relationshipId = $"{relationship.SourceId}-{relationship.Name}-{relationship.TargetId}";
+                    await twinsClient.CreateOrReplaceRelationshipAsync(newProduct.Id, relationshipId, relationship);
+                    ShowLog($"Created relationship - {relationshipId}");
+
+                    await UpdateOrderStatus(twinOpT.currentOrderId, "ProductCreated");
                 }
-                };
-                relationshipId = $"{relationship.SourceId}-{relationship.Name}-{relationship.TargetId}";
-                await twinsClient.CreateOrReplaceRelationshipAsync(newProduct.Id, relationshipId, relationship);
-                ShowLog($"Created relationship - {relationshipId}");
-
-                await UpdateOrderStatus(currentOrderId, "ProductCreated");
-
                 // Find Cooling Container Trucks
                 ccTrucks.Clear();
-                var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{ccTruckModelId}')";
+                var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{ccTruckModelId}') AND Status=0";
                 var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
                 await foreach (var truck in queryResponse)
                 {
                     ccTrucks.Add(truck.Id);
                 }
+                if (ccTrucks.Count == 0)
+                {
+                    MessageBox.Show("There is no Cooling Container Truck that has been at this Factory");
 
-                cbCCTrucks.IsEnabled = true;
-                buttonCreatedProduct.IsEnabled = false;
+                }
+                else
+                {
+                    cbCCTrucks.IsEnabled = true;
+                    buttonCreatedProduct.IsEnabled = false;
+                }
 
             }
             catch (Exception ex)
@@ -451,14 +482,12 @@ namespace WpfAppProductTransportSample
             buttonPickToCCTruck.IsEnabled = true;
         }
 
-        string currentCCTruckId = null;
-        string currentDestinationStationId = null;
         private async void buttonPickToCCTruck_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                currentCCTruckId = cbCCTrucks.SelectedItem as string;
-                var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{ccTruckModelId}') AND $dtId='{currentCCTruckId}'";
+                twinOpT.currentCCTruckId = cbCCTrucks.SelectedItem as string;
+                var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{ccTruckModelId}') AND $dtId='{twinOpT.currentCCTruckId}'";
                 BasicDigitalTwin ccTruck = null;
                 var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
                 await foreach (var truck in queryResponse)
@@ -468,14 +497,14 @@ namespace WpfAppProductTransportSample
                 }
                 if (ccTruck != null)
                 {
-                    var newLocation = $"Factory:{currentFactoryId}";
+                    var newLocation = $"Factory:{twinOpT.currentFactoryId}";
                     await UpdateTruckLocation(ccTruck, newLocation);
 
                     var relationship = new BasicRelationship()
                     {
                         Name = "carrying",
                         SourceId = ccTruck.Id,
-                        TargetId = currentProductId
+                        TargetId = twinOpT.currentProductId
                     };
                     var relationshipId = $"{relationship.SourceId}-{relationship.Name}-{relationship.TargetId}";
                     await twinsClient.CreateOrReplaceRelationshipAsync(ccTruck.Id, relationshipId, relationship);
@@ -484,7 +513,7 @@ namespace WpfAppProductTransportSample
                     // Find destination station for Cooling Container Truck
                     ShowLog("Search station where current truck will drive to...");
                     // 'order' can't be used in query because ...
-                    query = $"SELECT customer FROM digitaltwins O JOIN customer RELATED O.ordered_by WHERE O.$dtId = '{currentOrderId}' AND IS_OF_MODEL(O, '{orderModelId}')";
+                    query = $"SELECT customer FROM digitaltwins O JOIN customer RELATED O.ordered_by WHERE O.$dtId = '{twinOpT.currentOrderId}' AND IS_OF_MODEL(O, '{orderModelId}')";
                     queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
                     string targetCustomerId = null;
                     await foreach (var customer in queryResponse)
@@ -495,7 +524,7 @@ namespace WpfAppProductTransportSample
                     string responsibleStationId = null;
                     if (targetCustomerId != null)
                     {
-                        ShowLog($"Found Customer[{targetCustomerId}] of Order[{currentOrderId}] then search responsible station...");
+                        ShowLog($"Found Customer[{targetCustomerId}] of Order[{twinOpT.currentOrderId}] then search responsible station...");
                         // query = $"SELECT station FROM digitalTwins station JOIN customer RELATED station.responsible_for WHERE customer.$dtId = '{targetCustomerId}' AND IS_OF_MODEL(station, '{stationModelId}')";
                         // queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
                         // await foreach (var station in queryResponse)
@@ -516,7 +545,7 @@ namespace WpfAppProductTransportSample
                     }
                     if (responsibleStationId != null)
                     {
-                        currentDestinationStationId = responsibleStationId;
+                        twinOpT.currentDestinationStationId = responsibleStationId;
                         ShowLog($"Found Station[{responsibleStationId}]...");
                         relationship = new BasicRelationship()
                         {
@@ -529,7 +558,7 @@ namespace WpfAppProductTransportSample
                         ShowLog($"Created relationship - {relationshipId}");
                         ShowLog($"CoolingContainerTruck[{ccTruck.Id}] is ready for driving to Station[{responsibleStationId}]");
 
-                        await UpdateOrderStatus(currentOrderId, "TransportingToStation");
+                        await UpdateOrderStatus(twinOpT.currentOrderId, "TransportingToStation");
 
                         buttonCreatedProduct.IsEnabled = false;
                         cbCCTrucks.IsEnabled = false;
@@ -550,7 +579,7 @@ namespace WpfAppProductTransportSample
             try
             {
                 // Update Cooling Container Truck location because the truck has arrive to the destination station
-                var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{ccTruckModelId}') AND $dtId='{currentCCTruckId}'";
+                var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{ccTruckModelId}') AND $dtId='{twinOpT.currentCCTruckId}'";
                 BasicDigitalTwin ccTruck = null;
                 var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
                 await foreach (var truck in queryResponse)
@@ -562,15 +591,15 @@ namespace WpfAppProductTransportSample
                 {
                     // and delete 'drive_to' relationship
                     // and move products which has been carryed by this truck to Station as parallel
-                    var driveToRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentCCTruckId);
+                    var driveToRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(twinOpT.currentCCTruckId);
                     await foreach (var rel in driveToRels)
                     {
                         if (rel.Name == "drive_to")
                         {
-                            await twinsClient.DeleteRelationshipAsync(currentCCTruckId, rel.Id);
+                            await twinsClient.DeleteRelationshipAsync(twinOpT.currentCCTruckId, rel.Id);
                             ShowLog($"Deleted relationship - {rel.Id}");
 
-                            var newLocation = $"Station:{currentDestinationStationId}";
+                            var newLocation = $"Station:{twinOpT.currentDestinationStationId}";
                             await UpdateTruckLocation(ccTruck, newLocation);
                         }
                         else if (rel.Name == "carrying")
@@ -598,20 +627,20 @@ namespace WpfAppProductTransportSample
                             }
                             if (isValidProduct)
                             {
-                                await twinsClient.DeleteRelationshipAsync(currentCCTruckId, rel.Id);
+                                await twinsClient.DeleteRelationshipAsync(twinOpT.currentCCTruckId, rel.Id);
                                 ShowLog($"Deleted relationship - {rel.Id}");
 
                                 var relationship = new BasicRelationship()
                                 {
                                     Name = "sort_to",
-                                    SourceId = currentDestinationStationId,
+                                    SourceId = twinOpT.currentDestinationStationId,
                                     TargetId = rel.TargetId
                                 };
                                 var relationshipId = $"{relationship.SourceId}-{relationship.Name}-{relationship.TargetId}";
-                                await twinsClient.CreateOrReplaceRelationshipAsync(currentDestinationStationId, relationshipId, relationship);
+                                await twinsClient.CreateOrReplaceRelationshipAsync(twinOpT.currentDestinationStationId, relationshipId, relationship);
 
                                 ShowLog($"Created relationship - {relationshipId}");
-                                await UpdateOrderStatus(currentOrderId, "PreparingAtStation");
+                                await UpdateOrderStatus(twinOpT.currentOrderId, "PreparingAtStation");
                             }
                         }
                     }
@@ -639,10 +668,10 @@ namespace WpfAppProductTransportSample
             {
                 currentDVTruckId = cbDTruck.SelectedItem as string;
                 // Delete sort_to relationship
-                var rels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, relationshipName: "sort_to");
+                var rels = twinsClient.GetRelationshipsAsync<BasicRelationship>(twinOpT.currentDestinationStationId, relationshipName: "sort_to");
                 await foreach (var rel in rels)
                 {
-                    await twinsClient.DeleteRelationshipAsync(currentDestinationStationId, rel.Id);
+                    await twinsClient.DeleteRelationshipAsync(twinOpT.currentDestinationStationId, rel.Id);
                     ShowLog($"Deleted relationship - {rel.Id}");
                     var relationship = new BasicRelationship()
                     {
@@ -654,7 +683,7 @@ namespace WpfAppProductTransportSample
                     await twinsClient.CreateOrReplaceRelationshipAsync(currentDVTruckId, relationshipId, relationship);
                     ShowLog($"Created relationship - {relationshipId}");
 
-                    await UpdateOrderStatus(currentOrderId, "DeliveringToCustomer");
+                    await UpdateOrderStatus(twinOpT.currentOrderId, "DeliveringToCustomer");
 
                     var pRels = twinsClient.GetIncomingRelationshipsAsync(rel.TargetId);
                     await foreach(var pRel in pRels)
@@ -696,12 +725,12 @@ namespace WpfAppProductTransportSample
                     {
                         if (orderRel.RelationshipName == "created")
                         {
-                            if (orderRel.SourceId == currentOrderId)
+                            if (orderRel.SourceId == twinOpT.currentOrderId)
                             {
                                 await twinsClient.DeleteRelationshipAsync(currentDVTruckId, rel.Id);
                                 ShowLog($"Deleted relationship - {rel.Id}");
 
-                                await UpdateOrderStatus(currentOrderId, "Delivered");
+                                await UpdateOrderStatus(twinOpT.currentOrderId, "Delivered");
                                 var tmdOfPRels = twinsClient.GetIncomingRelationshipsAsync(rel.TargetId);
                                 await foreach(var tmdOfPRel in tmdOfPRels)
                                 {
@@ -714,6 +743,17 @@ namespace WpfAppProductTransportSample
                             }
                         }
                     }
+                }
+                MessageBox.Show("Twin Graph operation thread has been done!");
+                if (MessageBox.Show("Do you delete current order and product?", "Notice", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    bool deleteCustomer = true;
+                    if (MessageBox.Show("Do you delete current customer?", "Notice", MessageBoxButton.YesNo)== MessageBoxResult.No)
+                    {
+                        deleteCustomer = false;
+                    }
+                    await DeleteOrderProductForCustomer(deleteCustomer, twinOpT.currentCustomerId, twinOpT.currentOrderId);
+                    twinOpT.Clear();
                 }
                 buttonDeliverToCustomer.IsEnabled = false;
                 buttonDTruckBackToStation.IsEnabled = true;
@@ -799,6 +839,8 @@ namespace WpfAppProductTransportSample
                         }
                     }
                 }
+                twinOpT.currentCustomerId = tbCustomerDtId.Text;
+                buttonGetOrders.IsEnabled = true;
             }
             catch (Exception ex)
             {
@@ -808,10 +850,10 @@ namespace WpfAppProductTransportSample
 
         private async void buttonDeleteOrderProductCustomer_Click(object sender, RoutedEventArgs e)
         {
-            var currentCustomerId = tbCustomerDtId.Text;
+            var targetCustomerId = twinOpT.currentCustomerId;
             bool isDeleteCustomer = false;
             bool isDeleteAll = false;
-            if (!string.IsNullOrEmpty(currentCustomerId))
+            if (!string.IsNullOrEmpty(targetCustomerId))
             {
                 if (MessageBox.Show("Delete current Customer?", "Confirmation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
@@ -827,13 +869,14 @@ namespace WpfAppProductTransportSample
                 isDeleteAll = true;
                 isDeleteCustomer = true;
             }
-            var targetOrderId = currentOrderId;
+            var targetOrderId = twinOpT.currentOrderId;
+            twinOpT.Clear();
 
             try
             {
-                if (!string.IsNullOrEmpty(currentCustomerId))
+                if (!string.IsNullOrEmpty(targetCustomerId))
                 {
-                    await DeleteOrderProductForCustomer(isDeleteCustomer, currentCustomerId, targetOrderId);
+                    await DeleteOrderProductForCustomer(isDeleteCustomer, targetCustomerId, targetOrderId);
                 }
                 if (isDeleteAll)
                 {
@@ -841,7 +884,10 @@ namespace WpfAppProductTransportSample
                     var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
                     await foreach (var c in queryResponse)
                     {
-                        await DeleteOrderProductForCustomer(true, c.Id);
+                        if (targetCustomerId != c.Id)
+                        {
+                            await DeleteOrderProductForCustomer(true, c.Id);
+                        }
                     }
                 }
             }
@@ -851,9 +897,9 @@ namespace WpfAppProductTransportSample
             }
         }
 
-        private async Task DeleteOrderProductForCustomer(bool isDeleteCustomer, string currentCustomerId, string targetOrderId = null)
+        private async Task DeleteOrderProductForCustomer(bool isDeleteCustomer, string targetCustomerId, string targetOrderId = null)
         {
-            var orderForCustomerRels = twinsClient.GetIncomingRelationshipsAsync(currentCustomerId);
+            var orderForCustomerRels = twinsClient.GetIncomingRelationshipsAsync(targetCustomerId);
             bool hasDeletedAllRels = true;
             await foreach (var oFcRel in orderForCustomerRels)
             {
@@ -917,12 +963,12 @@ namespace WpfAppProductTransportSample
             {
                 if (!hasDeletedAllRels)
                 {
-                    MessageBox.Show($"Customer:{currentCustomerId} has other orders so this can't be deleted!");
+                    MessageBox.Show($"Customer:{targetCustomerId} has other orders so this can't be deleted!");
                 }
                 else
                 {
-                    await twinsClient.DeleteDigitalTwinAsync(currentCustomerId);
-                    ShowLog($"Delete Customer:{currentCustomerId}");
+                    await twinsClient.DeleteDigitalTwinAsync(targetCustomerId);
+                    ShowLog($"Delete Customer:{targetCustomerId}");
                 }
             }
         }
@@ -930,7 +976,7 @@ namespace WpfAppProductTransportSample
         private async void buttonSetTMD_Click(object sender, RoutedEventArgs e)
         {
             // First, list up products without TMD
-            var productRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, "sort_to");
+            var productRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(twinOpT.currentDestinationStationId, "sort_to");
             var sortingProducts = new List<string>();
             await foreach(var productRel in productRels)
             {
@@ -951,7 +997,7 @@ namespace WpfAppProductTransportSample
             }
 
             // Select tmd which is equipment of current station and is not used for product.
-            var tmdRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, "equipments");
+            var tmdRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(twinOpT.currentDestinationStationId, "equipments");
             await foreach(var tmdRel in tmdRels)
             {
                 var pRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(tmdRel.TargetId, "target");
@@ -993,7 +1039,7 @@ namespace WpfAppProductTransportSample
             // {
             //    dvTrucks.Add(((JsonElement)truck.Contents["truck"]).GetProperty("$dtId").GetString());
             // }
-            var dvTruckForStationRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(currentDestinationStationId, "assign_to");
+            var dvTruckForStationRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(twinOpT.currentDestinationStationId, "assign_to");
             await foreach (var dvtFsRel in dvTruckForStationRels)
             {
                 dvTrucks.Add(dvtFsRel.TargetId);
@@ -1034,14 +1080,230 @@ namespace WpfAppProductTransportSample
                 ShowLog(ex.Message);
             }
         }
+
+        private async void buttonConnectToSignalR_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var httpClient = new System.Net.Http.HttpClient();
+                var response = await httpClient.PostAsync(tbSignalRInstanceUrl.Text + "/api/SignalRInfo", new System.Net.Http.StringContent(""));
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    dynamic signalRInfoJson = Newtonsoft.Json.JsonConvert.DeserializeObject(responseContent);
+                    string signalRUrl = signalRInfoJson["url"];
+                    string accessToken = signalRInfoJson["accessToken"];
+                    string hub = signalRInfoJson["hub"];
+                    var hubConnection = new HubConnectionBuilder().WithUrl(signalRUrl, (info) =>
+                    {
+                        info.AccessTokenProvider = () => Task.FromResult(accessToken);
+                    }).Build();
+                    hubConnection.On<string>("SendData", async (msg) =>
+                    {
+                        await this.Dispatcher.InvokeAsync(() =>
+                        {
+                            ShowLog($"Received SignalR Message - {msg}");
+                            dynamic json = Newtonsoft.Json.JsonConvert.DeserializeObject(msg);
+                            string modelId = json["modelId"];
+                            string id = json["Id"];
+                            string eventType = json["eventtype"];
+                            if (!string.IsNullOrEmpty(eventType))
+                            {
+                                if (modelId == orderModelId)
+                                {
+                                    var candidates = products.Where(p => { return p.OrderId == id; });
+                                    if (eventType == "Microsoft.DigitalTwins.Twin.Create")
+                                    {
+                                        if (candidates.Count() == 0)
+                                        {
+                                            products.Add(new OrderAndProductInfo()
+                                            {
+                                                OrderId = id
+                                            });
+                                        }
+                                    }
+                                    else if (eventType == "Microsoft.DigitalTwins.Twin.Delete")
+                                    {
+                                        if (candidates.Count() >= 1)
+                                        {
+                                            products.Remove(candidates.First());
+                                        }
+                                    }
+                                }
+                                else if (modelId == productModelId)
+                                {
+                                    if (eventType == "Microsoft.DigitalTwins.Twin.Create" && json["orderId"] != null)
+                                    {
+                                        string orderId = json["orderId"];
+                                        var candidates = products.Where(p => { return p.OrderId == orderId; });
+                                        if (candidates.Count() > 0)
+                                        {
+                                            candidates.First().ProductId = id;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (modelId == orderModelId)
+                                {
+                                    var orderCandidates = products.Where(o => { return o.OrderId == id; });
+                                    if (orderCandidates.Count() > 0)
+                                    {
+                                        if (json["Status"] != null)
+                                        {
+                                            orderCandidates.First().OrderStatus = json["Status"];
+                                        }
+                                    }
+                                }
+                                else if (modelId == productModelId)
+                                {
+                                    var productCandidates = products.Where(p => { return p.ProductId == id; });
+                                    if (productCandidates.Count() > 0)
+                                    {
+                                        OrderAndProductInfo target = productCandidates.First();
+                                        if (json["Status"] != null)
+                                        {
+                                            int newStatus = json["Status"];
+                                            string newProductStatus = "Unknown";
+                                            switch (newStatus)
+                                            {
+                                                case 0:
+                                                    newProductStatus = "Proper";
+                                                    break;
+                                                case 1:
+                                                    newProductStatus = "NearLowLimit";
+                                                    break;
+                                                case 2:
+                                                    newProductStatus = "NearHighLimit";
+                                                    break;
+                                                case 3:
+                                                    newProductStatus = "Hopeless";
+                                                    break;
+                                                default:
+                                                    newProductStatus = "Unknown";
+                                                    break;
+                                            }
+                                            target.ProductStatus = newProductStatus;
+                                        }
+                                        if (json["Location"] != null)
+                                        {
+                                            target.ProductLocation = json["Location"];
+                                        }
+                                        if (json["Temperature"] != null)
+                                        {
+                                            target.ProductTemperature = json["Temperature"];
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+
+                    await hubConnection.StartAsync();
+                    buttonConnectToSignalR.IsEnabled = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowLog(ex.Message);
+            }
+        }
+
+        private async void buttonGetOrders_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(twinOpT.currentCustomerId))
+            {
+                return;
+            }
+            try
+            {
+                ordersByCustomer.Clear();
+                var orderRels = twinsClient.GetIncomingRelationshipsAsync(twinOpT.currentCustomerId);
+                await foreach (var oRel in orderRels)
+                {
+                    if (oRel.RelationshipName == "ordered_by")
+                    {
+                        ordersByCustomer.Add(oRel.SourceId);
+                    }
+                }
+                cbOrders.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                ShowLog(ex.Message);
+            }
+        }
+
+        private async void cbOrders_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cbOrders.SelectedItem == null)
+            {
+                return;
+            }
+            try
+            {
+                twinOpT.currentOrderId = (string)cbOrders.SelectedItem;
+                var query= $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{orderModelId}') AND $dtId='{twinOpT.currentOrderId}'";
+                var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
+                BasicDigitalTwin orderTwin = null;
+                await foreach (var o in queryResponse)
+                {
+                    orderTwin = o;
+                    break;
+                }
+                if (orderTwin != null)
+                {
+                    tbOrderDtId.Text = twinOpT.currentOrderId;
+                    tbOrderId.Text = ((JsonElement)orderTwin.Contents["OrderId"]).GetString();
+                    tbOrderStatus.Text = ((JsonElement)orderTwin.Contents["Status"]).GetString();
+                    var relsOfOrder = twinsClient.GetRelationshipsAsync<BasicRelationship>(twinOpT.currentOrderId);
+                    await foreach (var rel in relsOfOrder)
+                    {
+                        switch (rel.Name)
+                        {
+                            case "created":
+                                twinOpT.currentProductId = rel.TargetId;
+                                break;
+                            case "is_assigned_for":
+                                twinOpT.currentFactoryId = rel.TargetId;
+                                break;
+                        }
+                    }
+                    MessageBox.Show("Current implementation support only 'created' product step");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowLog(ex.Message);
+            }
+        }
     }
 
-    public class ProductInfo
+    class TwinOperationThread
     {
-        public string Id { get; set; }
-        public string ProductId { get; set; }
-        public string Status { get; set; }
-        public string Location { get; set; }
-        public double Temperature { get; set; }
+        public string currentCustomerId { get; set; }
+        public string currentOrderId { get; set; }
+        public string currentFactoryId { get; set; }
+        public string currentProductId { get; set; }
+        public string currentCCTruckId { get; set; }
+        public string currentDestinationStationId { get; set; }
+
+        List<TextBox> textboxes = new List<TextBox>();
+        public List<TextBox> TextBoxes { get { return textboxes; } }
+        public void Clear()
+        {
+            currentCustomerId = null;
+            currentOrderId = null;
+            currentFactoryId = null;
+            currentProductId = null;
+            currentCCTruckId = null;
+            currentDestinationStationId = null;
+            foreach (var tb in textboxes)
+            {
+                tb.Text = "";
+            }
+        }
+
     }
 }

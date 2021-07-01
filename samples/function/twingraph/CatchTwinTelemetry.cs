@@ -18,24 +18,25 @@ namespace EmbeddedGeorge.ADTSample
             [EventHub("twintelemetry",Connection="eventhub_twintelemetry_cs")] IAsyncCollector<string> outputEvents, ILogger log)
         {
             var eventGridEventData = eventGridEvent.Data.ToString();
-            log.LogInformation($"Id:{eventGridEvent.Id},Subject:{eventGridEvent.Subject} data:{eventGridEventData}");
-            log.LogInformation($"Topic:{eventGridEvent.Topic}");
-            var exceptions = new List<Exception>();
+            log.LogInformation($"Id:{eventGridEvent.Id},Subject:{eventGridEvent.Subject},EventType:{eventGridEvent.EventType},Topic:{eventGridEvent.Topic},data:{eventGridEventData}");
+             var exceptions = new List<Exception>();
             try {
-                dynamic messageJson = Newtonsoft.Json.JsonConvert.DeserializeObject(eventGridEventData);
-                dynamic data = messageJson["data"];
-                string dataschema = messageJson["dataschema"];
-                string subject = eventGridEvent.Subject;
-                if (!string.IsNullOrEmpty(dataschema)) {
-                    log.LogInformation($"telemetry - dataschema={dataschema}");
-                    var output = new {
-                        modelId = dataschema,
-                        Id = subject,
-                        data = data
-                    };
-                    var outputJson = Newtonsoft.Json.JsonConvert.SerializeObject(output);
-                    await outputEvents.AddAsync(outputJson);
-                    log.LogInformation($"Send to event hub - {outputJson}");
+                if (eventGridEvent.EventType == "microsoft.iot.telemetry") {
+                    dynamic messageJson = Newtonsoft.Json.JsonConvert.DeserializeObject(eventGridEventData);
+                    dynamic data = messageJson["data"];
+                    string dataschema = messageJson["dataschema"];
+                    string subject = eventGridEvent.Subject;
+                    if (!string.IsNullOrEmpty(dataschema)) {
+                        log.LogInformation($"telemetry - dataschema={dataschema}");
+                        var output = new {
+                            modelId = dataschema,
+                            Id = subject,
+                            data = data
+                        };
+                        var outputJson = Newtonsoft.Json.JsonConvert.SerializeObject(output);
+                        await outputEvents.AddAsync(outputJson);
+                        log.LogInformation($"Send to event hub - {outputJson}");
+                    }
                 }
             }
             catch (Exception ex) {
