@@ -9,10 +9,25 @@
 
 IoT Hub を通じて、デバイスの世界からのテレメトリーデータを供給する、シミュレーションアプリケーション。  
 ⇒ [Azure Digital Twins にテレメトリーデータを供給するためのシミュレータ開発](../samples/wpfapp/WpfAppProductTransportSample/WpfAppDliverTruckDriverMobileSimulator)
+このシミュレータを使って、Cooling Container Truck、Delivery Truck のモバイル端末から送られるテレメトリーデータを Azure IoT Hub に送信する。
 ## Function Applications  
-以下の種類の Function Application を作成する。  
-- <b>NoticeTelemetry</b> - 他のサービスからのデータに基づき、Twin Graph の更新、Telemetry Data の入力を行う。   
-- <b>CatchTelemtry</b> - 受信した Telemetry データを元に、Twin Model で定義されたルールに基づいて関連するTwin Property の更新や、別の Twin の Telemetry データを生成しつつ、Time Series Insights にデータを流す。    
-- <b>UpdateProperties</b> - Twin Graph の変化に応答して、Twin Model で定義されたルールに基づき、Twin Graph 内のデータの整合性を保ちつつ、変更内容を後段のサービスで活用しやすい様に加工し、メッセージ駆動でデータを流す。  
+Azure Digital Twins にアクセスする Function の作り方は、[HowToBuildFunctionApps.md](./HowToBuildFunctionApps.md) を参照の事。  
+このチュートリアルでは、以下の Function を順番に作成していく。  
 
-⇒[HowToBuildFunctionApps.md](./HowToBuildFunctionApps.md)
+### Transfer messages from Azure IoT Hub to Azure Digital Twins  
+Azure IoT Hub が受信したデータを元に、Azure Digital Twins への Telemetry Data の Publish、及び、Twin Graph の更新を行う。  
+⇒[HowToConnectIoTHubToADT.md](./HowToConnectIoTHubToADT.md)  
+
+### Propagate Consistency Twin Graph  
+Azure IoT Hub が受信したデータによる Twin Graph の変更、Telemetry Data の Publish、及び、WPF アプリケーションによる Twin Graph の更新をトリガーに、関連する Twin Properties の更新と、外部アプリや他のサービスに情報を提供のための、Event Hub へのメッセージ送信を行う Function 
+⇒[HowToBuildPropagateConsistencyTwinGraph.md](./HowToBuildPropagateConsistencyTwinGraph.md)  
+
+### Catch Twin Telemetry  
+Azure Digital Twins 側の Telemetry Data をキャプチャして別のサービス（例えば、Time Series Insgightsとか）に送信するための Function  
+⇒[HowToBuildCatchTwinTelemetry.md](./HowToBuildCatchTwinTelemetry.md)  
+
+### Send To Signal R  
+Propagate Consistency Twin Graph function が Event Hub に送信したメッセージを受信して、SignalR サービスに通知する Function  
+⇒[HowToBuildSendToSignalR.md](./HowToBuildSendToSignalR.md)  
+
+Azure IoT サービス群を使ってソリューションを構築する際によく使うパターンを網羅してみた。  
