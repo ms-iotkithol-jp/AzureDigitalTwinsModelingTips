@@ -43,6 +43,7 @@ namespace WpfAppProductTransportSample
             this.cbCCTrucks.ItemsSource = ccTrucks;
             this.cbDTruck.ItemsSource = dvTrucks;
             this.cbCurrentCustomers.ItemsSource = currentCustomers;
+            this.cbOrders.ItemsSource = ordersByCustomer;
 
             this.lbProducts.ItemsSource = products;
 
@@ -106,6 +107,7 @@ namespace WpfAppProductTransportSample
                 buttonGetStationsForCustomer.IsEnabled = true;
                 buttonGetCurrentCustomers.IsEnabled = true;
                 buttonDeleteOrderProductCustomer.IsEnabled = true;
+                buttonConnectToSignalR.IsEnabled = true;
                 buttonConnectToADT.IsEnabled = false;
             }
             catch (Exception ex)
@@ -1104,103 +1106,121 @@ namespace WpfAppProductTransportSample
                         {
                             ShowLog($"Received SignalR Message - {msg}");
                             dynamic json = Newtonsoft.Json.JsonConvert.DeserializeObject(msg);
-                            string modelId = json["modelId"];
-                            string id = json["Id"];
-                            string eventType = json["eventtype"];
-                            if (!string.IsNullOrEmpty(eventType))
+                            dynamic msgContent = json["message"];
+                            if (msgContent != null)
                             {
-                                if (modelId == orderModelId)
+                                string modelId = msgContent["modelId"];
+                                string id = msgContent["Id"];
+                                string eventType = msgContent["eventtype"];
+                                if (!string.IsNullOrEmpty(eventType))
                                 {
-                                    var candidates = products.Where(p => { return p.OrderId == id; });
-                                    if (eventType == "Microsoft.DigitalTwins.Twin.Create")
+                                    if (modelId == orderModelId)
                                     {
-                                        if (candidates.Count() == 0)
+                                        var candidates = products.Where(p => { return p.OrderId == id; });
+                                        if (eventType == "Microsoft.DigitalTwins.Twin.Create")
                                         {
-                                            products.Add(new OrderAndProductInfo()
+                                            if (candidates.Count() == 0)
                                             {
-                                                OrderId = id
-                                            });
-                                        }
-                                    }
-                                    else if (eventType == "Microsoft.DigitalTwins.Twin.Delete")
-                                    {
-                                        if (candidates.Count() >= 1)
-                                        {
-                                            products.Remove(candidates.First());
-                                        }
-                                    }
-                                }
-                                else if (modelId == productModelId)
-                                {
-                                    if (eventType == "Microsoft.DigitalTwins.Twin.Create" && json["orderId"] != null)
-                                    {
-                                        string orderId = json["orderId"];
-                                        var candidates = products.Where(p => { return p.OrderId == orderId; });
-                                        if (candidates.Count() > 0)
-                                        {
-                                            candidates.First().ProductId = id;
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (modelId == orderModelId)
-                                {
-                                    var orderCandidates = products.Where(o => { return o.OrderId == id; });
-                                    if (orderCandidates.Count() > 0)
-                                    {
-                                        if (json["Status"] != null)
-                                        {
-                                            orderCandidates.First().OrderStatus = json["Status"];
-                                        }
-                                    }
-                                }
-                                else if (modelId == productModelId)
-                                {
-                                    var productCandidates = products.Where(p => { return p.ProductId == id; });
-                                    if (productCandidates.Count() > 0)
-                                    {
-                                        OrderAndProductInfo target = productCandidates.First();
-                                        if (json["Status"] != null)
-                                        {
-                                            int newStatus = json["Status"];
-                                            string newProductStatus = "Unknown";
-                                            switch (newStatus)
-                                            {
-                                                case 0:
-                                                    newProductStatus = "Proper";
-                                                    break;
-                                                case 1:
-                                                    newProductStatus = "NearLowLimit";
-                                                    break;
-                                                case 2:
-                                                    newProductStatus = "NearHighLimit";
-                                                    break;
-                                                case 3:
-                                                    newProductStatus = "Hopeless";
-                                                    break;
-                                                default:
-                                                    newProductStatus = "Unknown";
-                                                    break;
+                                                products.Add(new OrderAndProductInfo()
+                                                {
+                                                    OrderId = id
+                                                });
                                             }
-                                            target.ProductStatus = newProductStatus;
                                         }
-                                        if (json["Location"] != null)
+                                        else if (eventType == "Microsoft.DigitalTwins.Twin.Delete")
                                         {
-                                            target.ProductLocation = json["Location"];
+                                            if (candidates.Count() >= 1)
+                                            {
+                                                products.Remove(candidates.First());
+                                            }
                                         }
-                                        if (json["Temperature"] != null)
+                                    }
+                                    else if (modelId == productModelId)
+                                    {
+                                        if (eventType == "Microsoft.DigitalTwins.Twin.Create" && msgContent["orderId"] != null)
                                         {
-                                            target.ProductTemperature = json["Temperature"];
+                                            string orderId = msgContent["orderId"];
+                                            var candidates = products.Where(p => { return p.OrderId == orderId; });
+                                            if (candidates.Count() > 0)
+                                            {
+                                                candidates.First().ProductId = id;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                else
+                                {
+                                    if (modelId == orderModelId)
+                                    {
+                                        var orderCandidates = products.Where(o => { return o.OrderId == id; });
+                                        if (orderCandidates.Count() > 0)
+                                        {
+                                            if (msgContent["Status"] != null)
+                                            {
+                                                orderCandidates.First().OrderStatus = msgContent["Status"];
+                                            }
+                                        }
+                                    }
+                                    else if (modelId == productModelId)
+                                    {
+                                        var productCandidates = products.Where(p => { return p.ProductId == id; });
+                                        if (productCandidates.Count() > 0)
+                                        {
+                                            OrderAndProductInfo target = productCandidates.First();
+                                            if (msgContent["Status"] != null)
+                                            {
+                                                int newStatus = msgContent["Status"];
+                                                target.SetProductStatus(newStatus);
+                                            }
+                                            if (msgContent["Location"] != null)
+                                            {
+                                                target.ProductLocation = msgContent["Location"];
+                                            }
+                                            if (msgContent["Temperature"] != null)
+                                            {
+                                                target.ProductTemperature = msgContent["Temperature"];
+                                            }
                                         }
                                     }
                                 }
                             }
                         });
                     });
+                    ShowLog("SignalR Subscribed.");
+
+                    var query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{orderModelId}')";
+                    var queryResponse = twinsClient.QueryAsync<BasicDigitalTwin>(query);
+                    products.Clear();
+                    await foreach(var o in queryResponse)
+                    {
+                        var oapInfo = new OrderAndProductInfo()
+                        {
+                            OrderId = o.Id
+                        };
+                        oapInfo.OrderStatus = ((JsonElement)o.Contents["Status"]).GetString();
+                        var pRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(o.Id, "created");
+                        await foreach (var p in pRels)
+                        {
+                            oapInfo.ProductId = p.TargetId;
+                            query = $"SELECT * FROM DigitalTwins WHERE IS_OF_MODEL('{productModelId}') AND $dtId='{p.TargetId}'";
+                            var queryProducts = twinsClient.QueryAsync<BasicDigitalTwin>(query);
+                            await foreach (var pTwin in queryProducts)
+                            {
+                                oapInfo.SetProductStatus(((JsonElement)pTwin.Contents["Status"]).GetInt32());
+                                if (pTwin.Contents.ContainsKey("Location"))
+                                {
+                                    oapInfo.ProductLocation = ((JsonElement)pTwin.Contents["Location"]).GetString();
+                                }
+                                break;
+                            }
+                            break;
+                        }
+                        products.Add(oapInfo);
+                    }
 
                     await hubConnection.StartAsync();
+                    ShowLog("SignalR message receiving started.");
                     buttonConnectToSignalR.IsEnabled = false;
                 }
             }
@@ -1276,6 +1296,51 @@ namespace WpfAppProductTransportSample
             catch (Exception ex)
             {
                 ShowLog(ex.Message);
+            }
+        }
+
+        private async void lbProducts_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (lbProducts.SelectedItem != null)
+            {
+                if (MessageBox.Show("Use this order for step by step try?", "Confirmation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    var oapInfo = (OrderAndProductInfo)lbProducts.SelectedItem;
+                    if (string.IsNullOrEmpty(tbCustomerDtId.Text))
+                    {
+                        var cRels = twinsClient.GetRelationshipsAsync<BasicRelationship>(oapInfo.OrderId, "ordered_by");
+                        BasicDigitalTwin customerTwin = null;
+                        await foreach (var cRel in cRels)
+                        {
+                            var cTwinResponse = await twinsClient.GetDigitalTwinAsync<BasicDigitalTwin>(cRel.TargetId);
+                            if (cTwinResponse.GetRawResponse().Status == 200)
+                            {
+                                customerTwin = cTwinResponse.Value;
+                            }
+                            break;
+                        }
+                        if (customerTwin != null)
+                        {
+                            tbCustomerDtId.Text = customerTwin.Id;
+                            tbCustomerId.Text = ((JsonElement)customerTwin.Contents["CustomerId"]).GetString();
+                            tbCustomerName.Text = ((JsonElement)customerTwin.Contents["Name"]).GetString();
+                            tbCustomerAddress.Text = ((JsonElement)customerTwin.Contents["Address"]).GetString();
+                            tbCustomerTelNo.Text = ((JsonElement)customerTwin.Contents["TelNo"]).GetString();
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Customer's Id is not empty!");
+                    }
+                    var oTwinResponse = await twinsClient.GetDigitalTwinAsync<BasicDigitalTwin>(oapInfo.OrderId);
+                    if (oTwinResponse.GetRawResponse().Status==200)
+                    {
+                        var oTwin = oTwinResponse.Value;
+                        tbOrderDtId.Text = oTwin.Id;
+                        tbOrderId.Text = ((JsonElement)oTwin.Contents["OrderId"]).GetString();
+                        tbOrderStatus.Text = ((JsonElement)oTwin.Contents["Status"]).GetString();
+                    }
+                }
             }
         }
     }

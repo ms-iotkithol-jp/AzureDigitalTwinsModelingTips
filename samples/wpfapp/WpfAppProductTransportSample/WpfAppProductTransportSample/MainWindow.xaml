@@ -186,12 +186,12 @@
                     <Border BorderBrush="Azure" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="  SignalR : " VerticalAlignment="Center"/>
-                            <Button Name="buttonConnectToSignalR" Content="Connect to SignalR" Margin="1" Click="buttonConnectToSignalR_Click"/>
+                            <Button Name="buttonConnectToSignalR" Content="Connect to SignalR" Margin="1" IsEnabled="False" Click="buttonConnectToSignalR_Click"/>
                             <TextBox Name="tbSignalRInstanceUrl" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <Border BorderBrush="Azure" BorderThickness="1" Grid.Row="1" Margin="1">
-                        <ListBox Name="lbProducts">
+                        <ListBox Name="lbProducts" SelectionChanged="lbProducts_SelectionChanged">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Border Margin="1" BorderBrush="YellowGreen" BorderThickness="1" Width="360" Height="77">

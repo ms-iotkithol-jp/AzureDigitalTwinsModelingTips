@@ -72,7 +72,7 @@ namespace EmbeddedGeorge.ADTSample
                             Id = dtId
                         };
                     }
-                    if (model == productModelId || model == orderModelId) {
+                    if (model == productModelId) {
                         string orderId = null;
                         var orderRels = twinsClient.GetIncomingRelationshipsAsync(dtId);
                         await foreach (var orderRel in orderRels) {
