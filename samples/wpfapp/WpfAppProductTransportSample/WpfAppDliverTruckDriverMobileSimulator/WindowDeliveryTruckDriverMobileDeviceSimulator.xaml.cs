@@ -2,6 +2,7 @@
 using Azure.DigitalTwins.Core;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,6 +33,7 @@ namespace WpfAppTruckSimulator
         ObservableCollection<TemperatureMeasurementDevice> tmds = new ObservableCollection<TemperatureMeasurementDevice>();
         IIoTLogger logger = null;
         DigitalTwinsClient twinsClient = null;
+        ITelemetryDataProvider telemetryDataProvider = null;
         public WindowDeliveryTruckDriverMobileDeviceSimulator(DigitalTwinsClient client, IIoTLogger logger)
         {
             InitializeComponent();
@@ -59,6 +61,7 @@ namespace WpfAppTruckSimulator
                 lastStatus = ((JsonElement)Target.Contents["Status"]).GetInt32();
                 cbStatus.SelectedIndex = lastStatus;
             }
+            telemetryDataProvider = new DTruckPaneDataProvider(tbAttitude, tbLatitude, tbLongitude);
         }
 
         DispatcherTimer sendTimer = null;
@@ -82,21 +85,10 @@ namespace WpfAppTruckSimulator
                 {
                     try
                     {
-                        var sendContent = new
-                        {
-                            temperatureMeasurementDevices = new List<object>(),
-                            location = new
-                            {
-                                longitude = double.Parse(tbLongitude.Text),
-                                latitude = double.Parse(tbLatitude.Text),
-                                attitude = double.Parse(tbAttitude.Text)
-                            },
-                            status = cbStatus.SelectedIndex,
-                            timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-                        };
+                        var tmds = new List<object>();
                         foreach (var tmd in TemparetureMewasurementDevices)
                         {
-                            sendContent.temperatureMeasurementDevices.Add(
+                            tmds.Add(
                                 new
                                 {
                                     tmdId = tmd.Id,
@@ -105,7 +97,7 @@ namespace WpfAppTruckSimulator
                                     timestamp = tmd.Timestamp
                                 });
                         }
-                        var json = Newtonsoft.Json.JsonConvert.SerializeObject(sendContent);
+                        var json = telemetryDataProvider.GetNextMessage(tmds, cbStatus.SelectedIndex);
                         var msg = new Message(System.Text.Encoding.UTF8.GetBytes(json));
                         msg.Properties.Add("application", "adt-transport-sample");
                         msg.Properties.Add("message-type", "driver-mobile");
@@ -179,6 +171,27 @@ namespace WpfAppTruckSimulator
                 if (updated)
                 {
                     await twinsClient.UpdateDigitalTwinAsync(Target.Id, patch);
+                    logger.ShowLog($"Update DTruck[{Target.Id}] Status<={cbStatus.SelectedIndex}");
+                }
+            }
+        }
+
+        private void buttonOpenCSVFile_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog();
+            dialog.Filter = "Prepared CSV file | *.csv";
+            if (dialog.ShowDialog().Value)
+            {
+                tbCSVFileName.Text = dialog.FileName;
+                var provider = new CCTruckLogDataProvider(tbCSVFileName.Text);
+                try
+                {
+                    provider.Parse();
+                    telemetryDataProvider = provider;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
                 }
             }
         }

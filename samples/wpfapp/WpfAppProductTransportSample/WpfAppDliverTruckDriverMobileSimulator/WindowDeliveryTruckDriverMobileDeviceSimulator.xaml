@@ -9,6 +9,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
+            <RowDefinition Height="25"/>
             <RowDefinition />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
@@ -18,8 +19,19 @@
             <TextBlock Text="Azure IoT Hub : " VerticalAlignment="Center" Margin="3,0,0,0"/>
             <TextBox Name="tbIoTHubConnectionString" VerticalAlignment="Center"/>
         </StackPanel>
-
         <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Name="buttonOpenCSVFile" Content="Open Prepared Data" Margin="1" Click="buttonOpenCSVFile_Click"/>
+            <TextBox Name="tbCSVFileName" VerticalAlignment="Center" Grid.Column="1" Grid.ColumnSpan="5"/>
+        </Grid>
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>

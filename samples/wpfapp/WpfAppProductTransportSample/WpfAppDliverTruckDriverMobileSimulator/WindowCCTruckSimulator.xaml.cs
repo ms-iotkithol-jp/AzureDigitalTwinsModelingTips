@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.DigitalTwins.Core;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,6 +26,7 @@ namespace WpfAppTruckSimulator
         public BasicDigitalTwin Target { get; set; }
         public string IotHubDeviceConnectionString { get; set; }
         private DigitalTwinsClient twinsClient;
+        ITelemetryDataProvider telemetryDataProvider = null;
         public WindowCCTruckSimulator(DigitalTwinsClient client, IIoTLogger logger)
         {
             InitializeComponent();
@@ -46,6 +48,7 @@ namespace WpfAppTruckSimulator
                 lastStatus = ((JsonElement)Target.Contents["Status"]).GetInt32();
                 cbStatus.SelectedIndex = lastStatus;
             }
+            telemetryDataProvider = new CCTruckPaneDataProvider(tbAttitude, tbLatitude, tbLongitude, tbTemp);
         }
 
         DeviceClient deviceClient = null;
@@ -76,24 +79,24 @@ namespace WpfAppTruckSimulator
                     timer.Interval = TimeSpan.FromSeconds(int.Parse(tbSendInterval.Text));
                     timer.Tick += async (s, e) =>
                     {
-                        var content = new
+                        var json = telemetryDataProvider.GetNextMessage(null, cbStatus.SelectedIndex);
+                        if (!string.IsNullOrEmpty(json))
                         {
-                            location = new
+                            var msg = new Message(System.Text.Encoding.UTF8.GetBytes(json));
+                            msg.Properties.Add("application", "adt-transport-sample");
+                            msg.Properties.Add("message-type", "cctruck");
+                            await deviceClient.SendEventAsync(msg);
+                            logger.ShowLog($"Send - {json}");
+                        }
+                        else
+                        {
+                            this.Dispatcher.Invoke(() =>
                             {
-                                longitude = double.Parse(tbLongitude.Text),
-                                latitude = double.Parse(tbLatitude.Text),
-                                attitude = double.Parse(tbAttitude.Text)
-                            },
-                            container_temperature = double.Parse(tbTemp.Text),
-                            status = cbStatus.SelectedIndex,
-                            timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-                        };
-                        var json = Newtonsoft.Json.JsonConvert.SerializeObject(content);
-                        var msg = new Message(System.Text.Encoding.UTF8.GetBytes(json));
-                        msg.Properties.Add("application", "adt-transport-sample");
-                        msg.Properties.Add("message-type", "cctruck");
-                        await deviceClient.SendEventAsync(msg);
-                        logger.ShowLog($"Send - {json}");
+                                timer.Stop();
+                                buttonSendStart.IsEnabled = true;
+                                buttonSendStop.IsEnabled = false;
+                            });
+                        }
                     };
                     timer.Start();
                     logger.ShowLog("Sending...");
@@ -146,6 +149,27 @@ namespace WpfAppTruckSimulator
                 if (updated)
                 {
                     await twinsClient.UpdateDigitalTwinAsync(Target.Id, patch);
+                    logger.ShowLog($"Update CCTruck[{Target.Id}] Status<={cbStatus.SelectedIndex}");
+                }
+            }
+        }
+
+        private void buttonOpenCSVFile_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog();
+            dialog.Filter = "Prepared CSV file | *.csv";
+            if (dialog.ShowDialog().Value)
+            {
+                tbCSVFileName.Text = dialog.FileName;
+                var provider = new CCTruckLogDataProvider(tbCSVFileName.Text);
+                try
+                {
+                    provider.Parse();
+                    telemetryDataProvider = provider;
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
                 }
             }
         }
