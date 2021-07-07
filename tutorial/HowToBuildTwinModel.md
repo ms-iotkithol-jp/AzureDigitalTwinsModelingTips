@@ -107,6 +107,7 @@ Twin Class をひな型に存在する、Twin（Instance）と、別の Twin Cla
 ※ あくまでも参考であり、必要最低限の Property、Relationship しか記載していない。  
 ※ 全ての Twin は、この図上の Twin Class のインスタンスであり、その Twin Class に定義された Property を持ち、他のTwin Class のインスタンスとの Relationship を満たさなければならない。  
 ※ プロパティで、右側に &lt;&lt;T&gt;&gt; が付与されているものは、"Telemetry" であることを示している。  
+※ UML による Notation の概要は、[HowToBuildTwinMode.md](./HowToBuildTwinModel.md) を参照の事。
 
 ---
 ### DTDL による Twin モデルの定義  
