@@ -102,7 +102,191 @@ appsettings.json に記載した接続情報がセットされた状態でウィ
 ![start d-truck sending](../../images/sim-start-d-truck-sending.svg)  
 
 （ちょっと凝りすぎ？）シナリオ的に、Delivery Truck で製品を運ぶときは、クーラーボックスに製品を入れて配送するとなっているので、当然段々と温度は上昇するよなと、更に、TMD の電池もデータを送信するたびに減るよな、ということで、値の変化も気持ちシミュレーションしている。  
-Delivery Truck の位置情報は、ウインドウの右側で地図表示で返られたらいいなと思っている。  
+
+### Delivery Truck の位置情報を地図で表示・指定する  
+Delivery Truck の位置情報を、Azure Maps で表示・指示する機能を追加する。  
+Azure Maps の利用方法は、https://docs.microsoft.com/ja-jp/azure/azure-maps/about-azure-maps を参照の事。  
+この WPF アプリでは、WebView という UI 部品を使って、HTML ファイルを表示・アプリロジックとの相互通信を行うことにより、Azure Maps の機能を利用する。  
+
+#### Azure Maps アカウント作成  
+https://docs.microsoft.com/ja-jp/azure/azure-maps/quick-demo-map-app#create-an-azure-maps-account を参考にしてアカウントを作成し、<b>Client ID</b> と<b>共有キー</b>を準備する。  
+
+#### WPF アプリへの Azure Map Web アプリの組込み  
+このプロジェクトに、NuGet パッケージの "Microsoft.Web.WebView2" をインストールする。  
+WebView2 を XAML ファイルに組み込む。  
+```xml
+<Window x:Class="WpfAppTruckSimulator..."
+        xmlns:local="clr-namespace:WpfAppTruckSimulator"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        mc:Ignorable="d"
+        Title="..." Height="450" Width="800">
+    <Grid>
+        ...
+            <Border BorderBrush="Beige" Grid.Column="1" BorderThickness="1" Margin="1">
+                <wv2:WebView2 Name="webView"/>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
+```
+
+プロジェクトに、<b>map</b> という名前でフォルダーを作成し、更にその下に、<b>scripts</b>という名前でフォルダーを作成する。  
+![create forlders](../../images/create_folders_in_project.svg)  
+https://github.com/Azure-Samples/AzureMapsCodeSamples で多くの Azure Map Web アプリサンプルが公開されていて、かつ、便利なライブラリも用意されているので、この Github リポジトリを clone し、AzureMapsCodeSamples/Common/scripts/ の JS ファイルを丸ごと Visual Studio 2019 のプロジェクトの、作成した map/scripts にコピー＆ペーストする。  
+図の様に、ファイルエクスプローラーで clone したフォルダーを開き、項目を全部選択（Ctrl+A）して、Visual Studio の Solution Explorer の map/scripts フォルダーにドラッグ＆ドロップするとよい。  
+![drag & drop](../../images/drag_and_drop_map_libraries.svg)  
+
+ライブラリを追加した状態を以下に示す。
+![library added](../../images/map_libraries_added.svg)  
+
+ドラッグ＆ドロップしたファイルは全て、"出力ディレクトリにコピー" の項目を "新しい場合はコピーする" に設定変更する。  
+![set copy mode](../../images/select_copy_mode.svg)  
+
+次に、map フォルダーの直下に、index.html というファイル名で HTML ファイルを追加する。  
+内容は、以下の通り  
+```html
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="keywords" content="Microsoft maps, map, gis, API, SDK, animation, animate, animations, point, symbol, pushpin, marker, pin" />
+    <meta name="author" content="Microsoft Azure Maps" />
+
+    <!-- Add references to the Azure Maps Map control JavaScript and CSS files. -->
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" type="text/css">
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+    <!-- Add reference to the animation module. -->
+    <script src="./scripts/azure-maps-animations.min.js"></script>
+    <!-- Add a reference to the Azure Maps Services Module JavaScript file. -->
+    <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js"></script>
+    <title></title>
+    <script type="text/javascript">
+        function setup(event) {
+            chrome.webview.addEventListener('message', args => {
+                receiveMessage(args);
+            });
+            CreateMap();
+        }
+        function receiveMessage(msg) {
+            var receiveMsg = JSON.parse(msg.data);
+            if (receiveMsg.msgtype == 'map') {
+                CreateMap(receiveMsg.clientId, receiveMsg.key);
+            }
+            if (receiveMsg.msgtype == 'position') {
+                var position = receiveMsg;
+                atlas.animations.setCoordinates(marker, [position.longitude, position.latitude], { duration: 1000, easing: 'easeInElastic', autoPlay: true });
+                map.setCamera({ center: [position.longitude, position.latitude] });
+            }
+        }
+        function sendMessage(msg) {
+            window.chrome.webview.postMessage(JSON.stringify(msg));
+        }
+
+        var map, marker;
+
+        function CreateMap() {
+            //Add Map Control JavaScript code here.
+            //Instantiate a map object
+            map = new atlas.Map("myMap", {
+                //Add your Azure Maps subscription key to the map SDK. Get an Azure Maps key at https://azure.com/maps
+                center: [-121.69281, 47.019588],
+                zoom: 10,
+                view: 'Auto',
+                authOptions: {
+                    authType: 'subscriptionKey',
+                    clientId: "Azure Map Account - Client ID", //Your Azure Active Directory client id for accessing your Azure Maps account.
+                    subscriptionKey: "Azure Map Account - Key"
+                }
+            });
+            //Wait until the map resources are ready.
+
+            map.events.add('ready', function () {
+                //Add the zoom control to the map.
+                map.controls.add(new atlas.control.ZoomControl(), {
+                    position: 'top-right'
+                });
+
+                //Create a marker and add it to the map.
+                marker = new atlas.HtmlMarker({
+                    position: [-121.69281, 47.019588]
+                });
+                map.markers.add(marker);
+
+                //When the map is clicked, animate the marker to the new position.
+                map.events.add('click', function (e) {
+                    atlas.animations.setCoordinates(marker, e.position, { duration: 1000, easing: 'easeInElastic', autoPlay: true });
+                    sendMessage({ msgtype: 'position', latitude: e.position[1], longitude: e.position[0] });
+                });
+            });
+        }
+    </script>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        #myMap {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body onload="setup()">
+    <div id="myMap"></div>
+</body>
+</html>
+```
+<b>clientId: "Azure Map Account - Client ID"</b> と、<b>subscriptionKey: "Azure Map Account - Key"</b> の " で囲まれた文字列を Azure Maps アカウントの Client ID、共有 Key で置き換える。  
+index.html ファイルの "出力ディレクトリへのコピー" も "新しい場合はコピー" を選択する。  
+index.html ファイルには、WPF アプリのロジック側から、緯度経度を受信してその場所を表示する機能と、マップ上でマウスクリックで指定された位置の緯度経度を WPF アプリのロジックに送信する機能を備えている。  
+
+XAML ファイルのコードビハインドで、Window が表示された時点で呼ばれるコールバック（Loaded）に、以下のコードを追加する。  
+```cs
+            await webView.EnsureCoreWebView2Async(null);
+            var currentDirectory = Environment.CurrentDirectory;
+            var indexFileUri = new Uri($"{currentDirectory}/map/index.html");
+            webView.CoreWebView2.Navigate(indexFileUri.AbsoluteUri);
+            webView.WebMessageReceived += WebView_WebMessageReceived;
+```
+このコードで、map/index.html が読み込まれて地図が表示される。  
+```cs
+        private void SetPositionToWebView(double latitude, double longitude)
+        {
+            var msg = new
+            {
+                msgtype = "position",
+                latitude = latitude,
+                longitude = longitude
+            };
+            webView.CoreWebView2.PostWebMessageAsString(Newtonsoft.Json.JsonConvert.SerializeObject(msg));
+        }
+
+        private void WebView_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                dynamic msg = Newtonsoft.Json.JsonConvert.DeserializeObject(e.TryGetWebMessageAsString());
+                if (msg.msgtype == "position")
+                {
+                    tbLatitude.Text = $"{msg.latitude}";
+                    tbLongitude.Text = $"{msg.longitude}";
+                }
+            });
+        }
+```
+上の二つのメソッドを実装することにより、ロジックから SetPositionToWebView をコールすれば、index.html 上の地図のマーカーが移動するし、マーカーの位置を中心に地図が表示される。  
+index.html の地図上でマウスでクリックすれば、 WebView＿WebMessageReceived がコールされ、緯度経度が取得できる。  
+
+以上で、地図の組込み例は完了。  
+
+ここで紹介した方法と SignalR による位置情報更新通知を組合わせれば、複数のトラックの現在位置を逐次表示する様なアプリも開発可能である。  
+
+---
 
 参考までに送信データを下図に示す。  
 ![dtruck sending data](../../images/sim-dtruck-sending-data.svg)

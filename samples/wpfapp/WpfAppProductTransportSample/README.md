@@ -121,4 +121,4 @@ Twin の削除の際、関係している Relationship を全て削除する。
 
 ---
 ## Signal R を利用した、Product の今を表示  
-Under Construction  
+[HowToBuildWPFApp.md](../../../tutorial/HowToBuildWPFApp.md#signalr-を利用したtwin-情報更新通知の受信) の説明を参照の事。  

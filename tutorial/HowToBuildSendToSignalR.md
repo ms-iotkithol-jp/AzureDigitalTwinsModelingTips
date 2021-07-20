@@ -1,5 +1,5 @@
 # How to Build Send to SignalR Function  
-個々では、PropagateConsistencyTwinGraph Function が Event Hub の twingraphupdate に送信したメッセージを SignalR Service を使って、関心のあるアプリやサービスに同報通信する部分の作成方法を解説する。  
+ここでは、PropagateConsistencyTwinGraph Function が Event Hub の twingraphupdate に送信したメッセージを SignalR Service を使って、関心のあるアプリやサービスに同報通信する部分の作成方法を解説する。  
 ![overview architecuture](images/function/ssr-ov-architecture.svg)  
 
 SignalR Service を使った仕組みの構築は、https://github.com/ms-iotkithol-jp/IoTDataShareBySignalRService を参考にしてほしい。  
@@ -58,6 +58,6 @@ WPF アプリケーションは、SignalR のサービスを構成する Functio
 
 ※ 本サンプルでは、HubForSignalRService へのアクセス権の設定を特にしていないので、誰でもアクセス可能であるので、実ソリューションでは、認証済みの接続のみを許可する設定にする必要がある。  
 
-Signal R Service への Subscribe、メッセージ受信方法は、[HowToBuildWPFApp.md](./HowToBuildWPFApp.md) の説明を参照の事。  
+Signal R Service への Subscribe、メッセージ受信方法は、[HowToBuildWPFApp.md](./HowToBuildWPFApp.md#signalr-を利用したtwin-情報更新通知の受信) の説明を参照の事。  
 
 Web アプリ等からの Subscribe、メッセージ送信については、https://github.com/ms-iotkithol-jp/IoTDataShareBySignalRService/tree/master/SampleViewer をご覧いただきたい。  

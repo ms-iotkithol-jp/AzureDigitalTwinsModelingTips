@@ -31,14 +31,27 @@ namespace WpfAppTruckSimulator
         {
             InitializeComponent();
             this.Loaded += WindowCCTruckSimulator_Loaded;
+            this.Closing += WindowCCTruckSimulator_Closing;
             this.logger = logger;
             twinsClient = client;
+        }
+
+        private async void WindowCCTruckSimulator_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (deviceClient != null)
+            {
+                await deviceClient.CloseAsync();
+            }
+            if (telemetryDataProvider != null)
+            {
+                telemetryDataProvider.Dispose();
+            }
         }
 
         IIoTLogger logger;
         int lastStatus = 0;
 
-        private void WindowCCTruckSimulator_Loaded(object sender, RoutedEventArgs e)
+        private async void WindowCCTruckSimulator_Loaded(object sender, RoutedEventArgs e)
         {
             tbIoTHubConnectionString.Text = IotHubDeviceConnectionString;
             tbCCTruckId.Text = Target.Id;
@@ -49,6 +62,37 @@ namespace WpfAppTruckSimulator
                 cbStatus.SelectedIndex = lastStatus;
             }
             telemetryDataProvider = new CCTruckPaneDataProvider(tbAttitude, tbLatitude, tbLongitude, tbTemp);
+
+            await webView.EnsureCoreWebView2Async(null);
+            var currentDirectory = Environment.CurrentDirectory;
+            var indexFileUri = new Uri($"{currentDirectory}/map/index.html");
+            webView.CoreWebView2.Navigate(indexFileUri.AbsoluteUri);
+            webView.WebMessageReceived += WebView_WebMessageReceived;
+            SetPositionToWebView(double.Parse(tbLatitude.Text), double.Parse(tbLongitude.Text));
+        }
+
+        private void SetPositionToWebView(double latitude, double longitude)
+        {
+            var msg = new
+            {
+                msgtype = "position",
+                latitude = latitude,
+                longitude = longitude
+            };
+            webView.CoreWebView2.PostWebMessageAsString(Newtonsoft.Json.JsonConvert.SerializeObject(msg));
+        }
+
+        private void WebView_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                dynamic msg = Newtonsoft.Json.JsonConvert.DeserializeObject(e.TryGetWebMessageAsString());
+                if (msg.msgtype == "position")
+                {
+                    tbLatitude.Text = $"{msg.latitude}";
+                    tbLongitude.Text = $"{msg.longitude}";
+                }
+            });
         }
 
         DeviceClient deviceClient = null;
@@ -71,6 +115,7 @@ namespace WpfAppTruckSimulator
         DispatcherTimer timer = null;
         private void buttonSendStart_Click(object sender, RoutedEventArgs e)
         {
+            SetPositionToWebView(double.Parse(tbLatitude.Text), double.Parse(tbLongitude.Text));
             if (timer == null)
             {
                 try
@@ -82,6 +127,7 @@ namespace WpfAppTruckSimulator
                         var json = telemetryDataProvider.GetNextMessage(null, cbStatus.SelectedIndex);
                         if (!string.IsNullOrEmpty(json))
                         {
+                            SetPositionToWebView(double.Parse(tbLatitude.Text), double.Parse(tbLongitude.Text));
                             var msg = new Message(System.Text.Encoding.UTF8.GetBytes(json));
                             msg.Properties.Add("application", "adt-transport-sample");
                             msg.Properties.Add("message-type", "cctruck");

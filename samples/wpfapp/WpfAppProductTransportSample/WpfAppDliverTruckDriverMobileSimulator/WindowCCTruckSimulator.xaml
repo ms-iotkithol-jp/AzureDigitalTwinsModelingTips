@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfAppTruckSimulator"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
         Title="Cooling Container Truck Simulator" Height="450" Width="800">
     <Grid>
@@ -82,7 +83,7 @@
                 </Grid>
             </Border>
             <Border BorderBrush="Beige" Grid.Column="1" BorderThickness="1" Margin="1">
-                
+                <wv2:WebView2 Name="webView"/>
             </Border>
         </Grid>
     </Grid>
