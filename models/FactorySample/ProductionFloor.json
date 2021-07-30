@@ -1,0 +1,19 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:manufacture:sample:ProductionFloor;1",
+  "@type": "Interface",
+  "displayName": "Production Floor",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:manufacture:sample:ProductionFloor:contain;1",
+      "name": "contain",
+      "target": "dtmi:com:embeddedgeorge:manufacture:sample:ProductionLine;1"
+    }
+  ]
+}

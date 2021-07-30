@@ -1,0 +1,49 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:general:sample:IoTDevice;1",
+  "@type": "Interface",
+  "displayName": "IoTDevice",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "IoTRegistry",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "DeviceId",
+            "schema": "string"
+          },
+          {
+            "name": "IoTHub",
+            "schema": "string"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Telemetry",
+      "name": "temperature",
+      "schema": "double"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "ElectoricConsumption",
+      "schema": "double",
+      "displayName": "Electoric Consumption"
+    },
+    {
+      "@type": "Property",
+      "name": "deviceStatus",
+      "schema": "string"
+    },
+    {
+      "@type": "Command",
+      "name": "reboot",
+      "request": {
+        "name": "delay",
+        "schema": "integer"
+      }
+    }
+  ]
+}

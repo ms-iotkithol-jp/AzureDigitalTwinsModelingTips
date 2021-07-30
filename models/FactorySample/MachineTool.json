@@ -1,0 +1,24 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:manufacture:sample:MachineTool;1",
+  "@type": "Interface",
+  "displayName": "MachineTool",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "Status",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "Temperature",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "ElectoricConsumption",
+      "schema": "double",
+      "displayName": "Electric Consumption"
+    }
+  ]
+}

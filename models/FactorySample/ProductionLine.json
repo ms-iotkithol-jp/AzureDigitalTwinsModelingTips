@@ -1,0 +1,19 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:manufacture:sample:ProductionLine;1",
+  "@type": "Interface",
+  "displayName": "ProductionLine",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:manufacture:sample:ProductionLine:installed;1",
+      "name": "installed",
+      "target": "dtmi:com:embeddedgeorge:manufacture:sample:MachineTool;1"
+    }
+  ]
+}

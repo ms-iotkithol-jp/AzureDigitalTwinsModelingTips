@@ -1,0 +1,22 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:manufacture:sample:IoTDeviceMachineToolMapping;1",
+  "@type": "Interface",
+  "displayName": "IoTDeviceMachineToolMapping",
+  "contents": [
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:manufacture:sample:IoTDeviceMachineToolMapping:MapOnIoTHub;1",
+      "name": "MapOnIoTHub",
+      "target": "dtmi:com:embeddedgeorge:general:sample:IoTDevice;1",
+      "maxMultiplicity": 1
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:manufacture:sample:IoTDeviceMachineToolMapping:MapOnFactory;1",
+      "name": "MapOnFactory",
+      "target": "dtmi:com:embeddedgeorge:manufacture:sample:MachineTool;1",
+      "maxMultiplicity": 1
+    }
+  ]
+}

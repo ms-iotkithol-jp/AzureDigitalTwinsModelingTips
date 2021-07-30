@@ -1,0 +1,43 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:manufacture:sample:Factory;1",
+  "@type": "Interface",
+  "displayName": "Factory",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "Name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "ProductionRatio",
+      "schema": "double",
+      "displayName": "Production Ratio"
+    },
+    {
+      "@type": "Property",
+      "name": "ProductionCapacity",
+      "schema": "double",
+      "displayName": "Production Capacity"
+    },
+    {
+      "@type": "Property",
+      "name": "ElectricityConsumption",
+      "schema": "double",
+      "displayName": "Electricity Consumption"
+    },
+    {
+      "@type": "Property",
+      "name": "CarbonDioxideEmission",
+      "schema": "double",
+      "displayName": "Carbon Dioxide Emission"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:manufacture:sample:Factory:contain;1",
+      "name": "contain",
+      "target": "dtmi:com:embeddedgeorge:manufacture:sample:ProductionFloor;1"
+    }
+  ]
+}
