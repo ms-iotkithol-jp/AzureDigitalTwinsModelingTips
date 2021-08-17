@@ -1,0 +1,34 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:EnvironmentSensor;1",
+  "@type": "Interface",
+  "displayName": "EnvironmentSensor",
+  "contents": [
+    {
+      "@type": "Telemetry",
+      "name": "sensing_data",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {           
+            "name": "temperature",
+            "schema": "double"
+          },
+          {
+            "name": "humidity",
+            "schema": "double"
+          },
+          {
+            "name": "co2Concentration",
+            "schema": "double"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Property",
+      "name": "iothub_deviceid",
+      "schema": "string"
+    }
+  ]
+}

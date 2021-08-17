@@ -1,0 +1,15 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:InletWorkOrder;1",
+  "@type": "Interface",
+  "displayName": "InletWorkOrder",
+  "extends": "dtmi:com:embeddedgeorge:logistics:sample:WorkOrder;1",
+  "contents": [
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:InletWorkOrder:target;1",
+      "name": "target",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:Goods;1"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:Worker;1",
+  "@type": "Interface",
+  "displayName": "Worker",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "location",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "status",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "string",
+        "enumValues": [
+          {
+            "name": "ready",
+            "enumValue": "ready"
+          },
+          {
+            "name": "inOrder",
+            "enumValue": "inOrder"
+          },
+          {
+            "name": "inTrouble",
+            "enumValue": "inTrouble"
+          },
+          {
+            "name": "inBreak",
+            "enumValue": "inBreak"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:Shelf;1",
+  "@type": "Interface",
+  "displayName": "Shelf",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "location",
+      "schema": "string",
+      "description": "棚の3次元位置情報へのURL"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:Shelf:installed;1",
+      "name": "installed",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:Palette;1"
+    }
+  ]
+}

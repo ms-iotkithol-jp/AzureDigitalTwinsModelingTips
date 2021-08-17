@@ -1,0 +1,15 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:HandyTerminal;1",
+  "@type": "Interface",
+  "displayName": "HandyTerminal",
+  "contents": [
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:HandyTerminal:support;1",
+      "name": "support",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:Worker;1",
+      "maxMultiplicity": 1
+    }
+  ]
+}

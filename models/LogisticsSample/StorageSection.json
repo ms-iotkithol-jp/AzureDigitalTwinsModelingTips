@@ -1,0 +1,49 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:StorageSection;1",
+  "@type": "Interface",
+  "displayName": "StorageSection",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "temperature",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "humidity",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "CarbonDioxideConcentration",
+      "schema": "double",
+      "displayName": "Carbon Dioxide Concentration"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:StorageSection:contain;1",
+      "name": "contain",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:Shelf;1"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:Shelf:monitoring;1",
+      "name": "monitoring",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:EnvironmentSensor;1",
+      "maxMultiplicity": 1
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:Shelf:viewing;1",
+      "name": "viewing",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:NetworkCamera;1",
+      "maxMultiplicity": 1
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:Warehouse;1",
+  "@type": "Interface",
+  "displayName": "Warehouse",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "temperature",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "humidity",
+      "schema": "double"
+    },
+    {
+      "@type": "Property",
+      "name": "CarbonDioxideConcentration",
+      "schema": "double",
+      "displayName": "Carbon Dioxide Concentration"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:Warehouse:contain;1",
+      "name": "contain",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:StorageSection;1"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:Warehouse:assign;1",
+      "name": "assign",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:Worker;1"
+    }
+  ]
+}

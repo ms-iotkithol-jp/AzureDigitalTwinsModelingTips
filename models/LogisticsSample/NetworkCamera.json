@@ -1,0 +1,64 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:NetworkCamera;1",
+  "@type": "Interface",
+  "displayName": "NetworkCamera",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "viewDirection",
+      "displayName": "View Direction",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "X",
+            "schema": "double"
+          },
+          {
+            "name": "Y",
+            "schema": "double"
+          },
+          {
+            "name": "Z",
+            "schema": "double"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "MoveViewDirection",
+      "displayName": "Move View Direction",
+      "request": {
+        "name": "direction",
+        "schema": {
+          "@type": "Object",
+          "fields": [
+            {
+              "name": "X",
+              "schema": "double"
+            },
+            {
+              "name": "Y",
+              "schema": "double"
+            },
+            {
+              "name": "Z",
+              "schema": "double"
+            }
+          ]
+        }
+      },
+      "response": {
+        "name": "status",
+        "schema": "string"
+      }
+    }
+  ]
+}

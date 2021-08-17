@@ -1,0 +1,26 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:CustomerOrder;1",
+  "@type": "Interface",
+  "displayName": "CustomerOrder",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "customerInfo",
+      "schema": "string"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:CustomerOrder:ordered;1",
+      "name": "ordered",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:GoodsSpec;1",
+      "properties": [
+        {
+          "@type": "Property",
+          "name": "amount",
+          "schema": "integer"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:Palette;1",
+  "@type": "Interface",
+  "displayName": "Palette",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "capacity",
+      "schema": "integer"
+    },
+    {
+      "@type": "Property",
+      "name": "Occupied",
+      "schema": "integer"
+    },
+    {
+      "@type": "Property",
+      "name": "status",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "free",
+            "enumValue": 0
+          },
+          {
+            "name": "occupied",
+            "enumValue": 1
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:Palette:specified;1",
+      "name": "specified",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:GoodsSpec;1",
+      "maxMultiplicity": 1
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:Palette:stored;1",
+      "name": "stored",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:Goods;1"
+    }
+  ]
+}

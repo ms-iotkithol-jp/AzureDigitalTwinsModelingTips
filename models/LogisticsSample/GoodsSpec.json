@@ -1,0 +1,18 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:GoodsSpec;1",
+  "@type": "Interface",
+  "displayName": "GoodsSpec",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "detailInfo",
+      "schema": "string"
+    }
+  ]
+}

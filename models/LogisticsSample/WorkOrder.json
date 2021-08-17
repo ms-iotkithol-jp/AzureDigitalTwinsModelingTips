@@ -1,0 +1,21 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:WorkOrder;1",
+  "@type": "Interface",
+  "displayName": "WorkOrder",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "createAt",
+      "schema": "dateTime"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:WorkOrder:assigned;1",
+      "name": "assigned",
+      "minMultiplicity": 0,
+      "maxMultiplicity": 1,
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:Worker;1"
+    }
+  ]
+}

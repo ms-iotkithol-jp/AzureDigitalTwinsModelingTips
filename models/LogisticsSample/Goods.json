@@ -1,0 +1,25 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:Goods;1",
+  "@type": "Interface",
+  "displayName": "Goods",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "name",
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "receiptDate",
+      "schema": "dateTime"
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:Goods:specified;1",
+      "name": "specified",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:GoodsSpec;1",
+      "maxMultiplicity": 1
+    }
+  ]
+}

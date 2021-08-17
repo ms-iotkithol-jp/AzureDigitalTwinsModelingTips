@@ -1,0 +1,21 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:com:embeddedgeorge:logistics:sample:OutletWorkerOrder;1",
+  "@type": "Interface",
+  "displayName": "OutletWorkerOrder",
+  "contents": [
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:OutletWorkerOrder:target;1",
+      "name": "target",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:CustomerOrder;1",
+      "maxMultiplicity": 1
+    },
+    {
+      "@type": "Relationship",
+      "@id": "dtmi:com:embeddedgeorge:logistics:sample:OutletWorkerOrder:deliver;1",
+      "name": "deliver",
+      "target": "dtmi:com:embeddedgeorge:logistics:sample:Goods;1"
+    }
+  ]
+}
