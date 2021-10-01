@@ -243,4 +243,4 @@ Relationship の Traverse は多段も可能ではあるが、とりあえず、
 Query 文法の詳細は、https://docs.microsoft.com/en-us/azure/digital-twins/how-to-query-graph を参照の事。  
 
 ---
-[ADT を使ったアプリ開発](./HowToBuildAppWthADT.md)
+[ADT を使ったアプリ開発](./HowToBuildAppWithADT.md)
